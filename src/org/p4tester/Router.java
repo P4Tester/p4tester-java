@@ -24,6 +24,7 @@ class RouterRule {
         this.switchProbeSets = new ArrayList<>();
     }
 
+
     public void setMatchBdd(int matchBdd) {
         this.matchBdd = matchBdd;
     }
@@ -70,7 +71,6 @@ class RouterRule {
 public class Router {
     private HashMap<String, RouterRule> ruleHashMap;
     private ArrayList<RouterRule> rules ;
-    private ArrayList<Probe> probes;
     private P4TesterBDD bdd;
     private String name;
     private ArrayList<String> localIps;
@@ -91,7 +91,6 @@ public class Router {
         this.bdd = bdd;
         this.name = name;
         this.rules = new ArrayList<>();
-        this.probes = new ArrayList<>();
         this.localIps = new ArrayList<>();
         this.switchProbeSets = new ArrayList<>();
         this.networkProbeSets = new ArrayList<>();
@@ -105,6 +104,8 @@ public class Router {
 
         ruleHashMap = new HashMap<>();
     }
+
+
 
     public BDDTree getTree() {
         return tree;
@@ -125,6 +126,7 @@ public class Router {
     public String getName() {
         return name;
     }
+
 
     public void addIPv4withPrefix(String str, String port, String nextHop) {
         String[] ipv4 =  str.split("/");
@@ -189,13 +191,6 @@ public class Router {
     //    return complementTree;
     //}
 
-    public void addProbe(Probe probe) {
-        this.probes.add(probe);
-    }
-
-    public ArrayList<Probe> getProbes() {
-        return probes;
-    }
 
     public boolean hasLocalIp(String ip) {
         return this.localIps.contains(ip);
@@ -439,7 +434,6 @@ public class Router {
 
 
         // BDDTreeNode node = this.complementTree.query(switchProbeSet.getMatch());
-
         // TODO
     /*
     if (networkProbeSet == null) {

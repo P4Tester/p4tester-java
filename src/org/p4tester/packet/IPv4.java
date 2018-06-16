@@ -60,8 +60,8 @@ public class IPv4 extends BasePacket {
     protected byte ttl;
     protected IpProtocol protocol;
     protected short checksum;
-    protected IPv4Address sourceAddress;
-    protected IPv4Address destinationAddress;
+    protected int sourceAddress;
+    protected int destinationAddress;
     protected byte[] options;
 
     protected boolean isTruncated;
@@ -76,8 +76,8 @@ public class IPv4 extends BasePacket {
         isTruncated = false;
         isFragment = false;
         protocol = IpProtocol.NONE;
-        sourceAddress = IPv4Address.NONE;
-        destinationAddress = IPv4Address.NONE;
+        sourceAddress = 0;
+        destinationAddress = 0;
     }
 
     /**
@@ -238,64 +238,35 @@ public class IPv4 extends BasePacket {
     /**
      * @return the sourceAddress
      */
-    public IPv4Address getSourceAddress() {
+    public int getSourceAddress() {
         return sourceAddress;
     }
 
     /**
      * @param sourceAddress the sourceAddress to set
      */
-    public IPv4 setSourceAddress(IPv4Address sourceAddress) {
-        this.sourceAddress = sourceAddress;
-        return this;
-    }
-    
-    /**
-     * @param sourceAddress the sourceAddress to set
-     */
     public IPv4 setSourceAddress(int sourceAddress) {
-        this.sourceAddress = IPv4Address.of(sourceAddress);
-        return this;
-    }
-
-    /**
-     * @param sourceAddress the sourceAddress to set
-     */
-    public IPv4 setSourceAddress(String sourceAddress) {
-        this.sourceAddress = IPv4Address.of(sourceAddress);
+        this.sourceAddress = sourceAddress;
         return this;
     }
 
     /**
      * @return the destinationAddress
      */
-    public IPv4Address getDestinationAddress() {
+    public int getDestinationAddress() {
         return destinationAddress;
     }
 
-    /**
-     * @param destinationAddress the destinationAddress to set
-     */
-    public IPv4 setDestinationAddress(IPv4Address destinationAddress) {
-        this.destinationAddress = destinationAddress;
-        return this;
-    }
+
     
     /**
      * @param destinationAddress the destinationAddress to set
      */
     public IPv4 setDestinationAddress(int destinationAddress) {
-        this.destinationAddress = IPv4Address.of(destinationAddress);
+        this.destinationAddress = destinationAddress;
         return this;
     }
 
-    /**
-     * @param destinationAddress the destinationAddress to set
-     */
-    public IPv4 setDestinationAddress(String destinationAddress) {
-        this.destinationAddress = IPv4Address.of(destinationAddress);
-        return this;
-    }
 
     /**
      * @return the options
@@ -350,8 +321,8 @@ public class IPv4 extends BasePacket {
         bb.put(this.ttl);
         bb.put((byte)this.protocol.getIpProtocolNumber());
         bb.putShort(this.checksum);
-        bb.putInt(this.sourceAddress.getInt());
-        bb.putInt(this.destinationAddress.getInt());
+        bb.putInt(this.sourceAddress);
+        bb.putInt(this.destinationAddress);
         if (this.options != null)
             bb.put(this.options);
         if (payloadData != null)
@@ -395,8 +366,8 @@ public class IPv4 extends BasePacket {
         this.ttl = bb.get();
         this.protocol = IpProtocol.of(U8.f(bb.get()));
         this.checksum = bb.getShort();
-        this.sourceAddress = IPv4Address.of(bb.getInt());
-        this.destinationAddress = IPv4Address.of(bb.getInt());
+        this.sourceAddress = bb.getInt();
+        this.destinationAddress = bb.getInt();
 
         if (this.headerLength > 5) {
             int optionsLength = (this.headerLength - 5) * 4;
@@ -555,7 +526,7 @@ public class IPv4 extends BasePacket {
         final int prime = 2521;
         int result = super.hashCode();
         result = prime * result + checksum;
-        result = prime * result + destinationAddress.getInt();
+        result = prime * result + destinationAddress;
         result = prime * result + diffServ;
         result = prime * result + flags;
         result = prime * result + fragmentOffset;
@@ -563,7 +534,7 @@ public class IPv4 extends BasePacket {
         result = prime * result + identification;
         result = prime * result + Arrays.hashCode(options);
         result = prime * result + protocol.getIpProtocolNumber();
-        result = prime * result + sourceAddress.getInt();
+        result = prime * result + sourceAddress;
         result = prime * result + totalLength;
         result = prime * result + ttl;
         result = prime * result + version;
@@ -584,7 +555,7 @@ public class IPv4 extends BasePacket {
         IPv4 other = (IPv4) obj;
         if (checksum != other.checksum)
             return false;
-        if (!destinationAddress.equals(other.destinationAddress))
+        if (destinationAddress != other.destinationAddress)
             return false;
         if (diffServ != other.diffServ)
             return false;
@@ -600,7 +571,7 @@ public class IPv4 extends BasePacket {
             return false;
         if (!protocol.equals(other.protocol))
             return false;
-        if (!sourceAddress.equals(other.sourceAddress))
+        if (sourceAddress!=other.sourceAddress)
             return false;
         if (totalLength != other.totalLength)
             return false;

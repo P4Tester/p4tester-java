@@ -8,7 +8,7 @@ public class Main {
 
 
         P4Tester p4tester = new P4Tester(bdd);
-        p4tester.internalTest();
-        // p4tester.start();
+        // p4tester.internalTest();
+        p4tester.startInternet2();
     }
 }

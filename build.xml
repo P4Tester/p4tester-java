@@ -1,36 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>  
   
-<project name="p4tester" default="build" basedir=".">  
+<project name="p4tester" default="compile" basedir=".">
   
-<property name="src" value="src"/>  
-<property name="dest" value="build/"/>  
-<property name="lib" value="build/lib"/>  
-<property name="jar" value="build/p4tester.jar"/>  
-  
-<target name="init">  
-    <mkdir dir="${dest}"/> 
-    <mkdir dir="${lib}"/>  
-</target>  
-  
-<target name="compile">  
-    <javac srcdir="${src}" destdir="${dest}"/>  
-</target>  
-  
-<target name="build">  
-    <jar destfile="${jar}" basedir="${dest}">  
-       <manifest>  
-          <attribute name="Main-Class" value="Main"/>  
-       </manifest>  
-    </jar>  
-</target>  
-  
-<target name="run">  
-    <java classname="Main" classpath="${jar}"/>  
-</target> 
-  
-<target name="clean">  
-    <delete file="${jar}"/>  
-    <delete dir="${dest}"/>  
-    <delete dir="${lib}"/>  
-</target>  
-</project> 
+    <property name="src.root" value="src"/>
+    <property name="build.dir" value="build/"/>
+    <property name="class.dir" value="build/class/"/>
+    <property name="lib.dir" value="lib"/>
+    <property name="jar" value="build/p4tester.jar"/>
+    <property name="mainclass" value="org.p4tester.Main"/>
+
+    <path id="basepath">
+        <pathelement location="${class.dir}" />
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="prepare">
+        <delete dir="${build.dir}"/>
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${class.dir}"/>
+    </target>
+
+    <target name="compile" depends="prepare">
+        <javac srcdir="${src.root}"
+               destdir="${class.dir}"
+               debug="on"
+               optimize="on"
+               deprecation="on">
+            <classpath refid="basepath"/>
+        </javac>
+    </target>
+
+    <!-- 3. 打包jar文件 -->
+    <target name="jar" depends="compile">
+        <copy todir="${build.dir}/lib">
+            <fileset dir="${lib.dir}"/>
+        </copy>
+
+        <!--Create a property containing all .jar files,
+        prefix lib/, and seperated with a space-->
+        <pathconvert property="mf.classpath" pathsep=" ">
+            <mapper>
+                <chainedmapper>
+                    <!-- jar包文件只留文件名，去掉目录信息 -->
+                    <flattenmapper/>
+                    <!-- add lib/ prefix -->
+                    <globmapper from="*" to="lib/*"/>
+                </chainedmapper>
+            </mapper>
+            <path refid="basepath"/>
+        </pathconvert>
+
+        <!-- jar文件的输出路径 -->
+        <jar destfile="${jar}" basedir="${class.dir}">
+            <manifest>
+                <attribute name="Main-class" value="${mainclass}"/>
+                <attribute name="Class-Path" value="${mf.classpath}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="run">
+        <java classname="${main}" fork="true">
+            <classpath refid="basepath"/>
+        </java>
+    </target>
+
+</project>
+

@@ -59,11 +59,11 @@ public class P4TesterProbeProcessor implements PacketListener {
     }
 
     public void injectProbes() {
-        System.out.println("1");
         if (networkProbeSets != null) {
             for (NetworkProbeSet networkProbeSet:networkProbeSets) {
-                for (Ethernet ethernet:networkProbeSet.generateProbes()) {
-                    System.out.println("1");
+                //System.out.println("NetworkProbeSet :" + networkProbeSet.getRouters().size() + "  " + networkProbeSet.getPaths().size());
+                for (byte[] probe:networkProbeSet.generateProbes()) {
+                    System.out.println("Probe Size:" + probe.length);
                     // try {
                     //     this.handle.sendPacket(ethernet.serialize());
                     //} catch (NotOpenException e) {

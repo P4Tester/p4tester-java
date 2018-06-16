@@ -36,10 +36,7 @@ public class Ethernet extends BasePacket {
     public static final short TYPE_RARP = (short) 0x8035;
     public static final short TYPE_IPv4 = 0x0800;
     public static final short TYPE_IPv6 = (short) 0x86DD;
-    public static final short TYPE_LLDP = (short) 0x88cc;
-    public static final short TYPE_BSN = (short) 0x8942;
     public static final short VLAN_UNTAGGED = VlanVid.ZERO.getVlan(); // untagged vlan must be 0x0000 for loxi. We can use the convenient ZERO field
-    public static final short DATALAYER_ADDRESS_LENGTH = 6; // bytes
     public static Map<Short, Class<? extends IPacket>> etherTypeClassMap;
 
     static {
@@ -50,8 +47,8 @@ public class Ethernet extends BasePacket {
         etherTypeClassMap.put(TYPE_IPv6, IPv6.class);
     }
 
-    protected MacAddress destinationMACAddress;
-    protected MacAddress sourceMACAddress;
+    protected byte[] destinationMACAddress;
+    protected byte[] sourceMACAddress;
     protected byte priorityCode;
     protected short vlanID;
     protected EthType etherType;
@@ -68,7 +65,7 @@ public class Ethernet extends BasePacket {
     /**
      * @return the destination MAC
      */
-    public MacAddress getDestinationMACAddress() {
+    public byte[] getDestinationMACAddress() {
         return destinationMACAddress;
     }
 
@@ -76,30 +73,14 @@ public class Ethernet extends BasePacket {
      * @param destinationMACAddress the destination MAC to set
      */
     public Ethernet setDestinationMACAddress(byte[] destinationMACAddress) {
-        this.destinationMACAddress = MacAddress.of(destinationMACAddress);
-        return this;
-    }
-
-    /**
-     * @param destinationMACAddress the destination MAC to set
-     */
-    public Ethernet setDestinationMACAddress(MacAddress destinationMACAddress) {
         this.destinationMACAddress = destinationMACAddress;
-        return this;
-    }
-
-    /**
-     * @param destinationMACAddress the destination MAC to set
-     */
-    public Ethernet setDestinationMACAddress(String destinationMACAddress) {
-        this.destinationMACAddress = MacAddress.of(destinationMACAddress);
         return this;
     }
 
     /**
      * @return the source MACAddress
      */
-    public MacAddress getSourceMACAddress() {
+    public byte[] getSourceMACAddress() {
         return sourceMACAddress;
     }
 
@@ -107,23 +88,7 @@ public class Ethernet extends BasePacket {
      * @param sourceMACAddress the source MAC to set
      */
     public Ethernet setSourceMACAddress(byte[] sourceMACAddress) {
-        this.sourceMACAddress = MacAddress.of(sourceMACAddress);
-        return this;
-    }
-
-    /**
-     * @param sourceMACAddress the source MAC to set
-     */
-    public Ethernet setSourceMACAddress(MacAddress sourceMACAddress) {
         this.sourceMACAddress = sourceMACAddress;
-        return this;
-    }
-
-    /**
-     * @param sourceMACAddress the source MAC to set
-     */
-    public Ethernet setSourceMACAddress(String sourceMACAddress) {
-        this.sourceMACAddress = MacAddress.of(sourceMACAddress);
         return this;
     }
 
@@ -172,20 +137,7 @@ public class Ethernet extends BasePacket {
         return this;
     }
 
-    /**
-     * @return True if the Ethernet frame is broadcast, false otherwise
-     */
-    public boolean isBroadcast() {
-        assert(destinationMACAddress.getLength() == 6);
-        return destinationMACAddress.isBroadcast();
-    }
 
-    /**
-     * @return True is the Ethernet frame is multicast, False otherwise
-     */
-    public boolean isMulticast() {
-        return destinationMACAddress.isMulticast();
-    }
     /**
      * Pad this packet to 60 bytes minimum, filling with zeros?
      * @return the pad
@@ -216,8 +168,8 @@ public class Ethernet extends BasePacket {
         }
         byte[] data = new byte[length];
         ByteBuffer bb = ByteBuffer.wrap(data);
-        bb.put(destinationMACAddress.getBytes());
-        bb.put(sourceMACAddress.getBytes());
+        bb.put(destinationMACAddress);
+        bb.put(sourceMACAddress);
         if (vlanID != VLAN_UNTAGGED) {
             bb.putShort((short) EthType.VLAN_FRAME.getValue());
             bb.putShort((short) ((priorityCode << 13) | (vlanID & 0x0fff)));
@@ -237,16 +189,12 @@ public class Ethernet extends BasePacket {
             return null;
         ByteBuffer bb = ByteBuffer.wrap(data, offset, length);
         if (this.destinationMACAddress == null)
-            this.destinationMACAddress = MacAddress.of(new byte[6]);
-        byte[] dstAddr = new byte[MacAddress.NONE.getLength()];
-        bb.get(dstAddr);
-        this.destinationMACAddress = MacAddress.of(dstAddr);
+            this.destinationMACAddress = new byte[6];
+        bb.get(this.destinationMACAddress);
 
         if (this.sourceMACAddress == null)
-            this.sourceMACAddress = MacAddress.of(new byte[6]);
-        byte[] srcAddr = new byte[MacAddress.NONE.getLength()];
-        bb.get(srcAddr);
-        this.sourceMACAddress = MacAddress.of(srcAddr);
+            this.sourceMACAddress = new byte[6];
+        bb.get(this.sourceMACAddress);
 
         /*
          * The ethertype is represented as 2 bytes in the packet header;
@@ -468,9 +416,9 @@ public class Ethernet extends BasePacket {
         else if (pkt instanceof IPv4) {
             IPv4 p = (IPv4) pkt;
             sb.append("\nnw_src: ");
-            sb.append(p.getSourceAddress().toString());
+            sb.append(p.getSourceAddress());
             sb.append("\nnw_dst: ");
-            sb.append(p.getDestinationAddress().toString());
+            sb.append(p.getDestinationAddress());
             sb.append("\nnw_tos: ");
             sb.append(p.getDiffServ());
             sb.append("\nnw_proto: ");

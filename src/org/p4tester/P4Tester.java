@@ -41,7 +41,6 @@ public class P4Tester {
     private ArrayList<Router> routers;
     private ArrayList<NetworkProbeSet> probeSets;
     private P4TesterBDD bdd;
-    private BDDTree tree;
     private HashMap<String, Router> routerMap;
     private HashMap<String, ArrayList<Router>> topoMap;
     private Router root;
@@ -81,14 +80,13 @@ public class P4Tester {
         this.bdd = bdd;
         this.routerMap = new HashMap<>();
         this.probeSets = new ArrayList<>();
-        this.tree = new BDDTree(bdd);
         this.routers = new ArrayList<>();
         this.topoMap = new HashMap<>();
         this.path = new ArrayList<>();
 
     }
 
-    public void encodeInternet2(String routerName, String fileName) {
+    public void parseInternet2(String routerName, String fileName) {
         try {
             InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(fileName));
             BufferedReader reader = new BufferedReader(inputStreamReader);
@@ -181,8 +179,54 @@ public class P4Tester {
         }
     }
 
+    public void parseCompressedStanford(String routerName, String fileName) {
+        try {
+            InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(fileName));
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+
+            String line;
+            Router router = new Router(bdd, routerName);
+
+            reader.readLine();
+            String match;
+            String port;
+            String nextHop;
+            while((line = reader.readLine()) != null) {
+                match = null;
+                port = null;
+                nextHop = null;
+
+                try {
+                    String[] info = line.split(" ");
+                    match = info[0];
+                    port = info[1];
+                    nextHop = info[1];
+
+                    if (match != null && nextHop != null) {
+                        router.addIPv4withPrefix(match, port, nextHop);
+                    } else {
+                        // System.out.println(line);
+                    }
 
 
+                } catch (Exception e) {
+
+                }
+            }
+            router.generateProbeSets();
+            this.routers.add(router);
+            routerMap.put(routerName, router);
+            inputStreamReader.close();
+            reader.close();
+            System.out.println(routerName + " " + router.getRules().size());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
+    @Deprecated
     public void encodeStanford(String routerName, String fileName) {
         try {
             InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(fileName));
@@ -225,7 +269,7 @@ public class P4Tester {
                     if (match != null && nextHop != null) {
                         router.addIPv4withPrefix(match, port, nextHop);
                     } else {
-                        System.out.println(line);
+                        // System.out.println(line);
                     }
 
 
@@ -238,6 +282,7 @@ public class P4Tester {
             routerMap.put(routerName, router);
             inputStreamReader.close();
             reader.close();
+            System.out.println(routerName + " " + router.getRules().size());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -245,9 +290,9 @@ public class P4Tester {
     }
 
 
-    public void start() {
+    public void startInternet2() {
         long start = System.nanoTime();
-        probeConstruct();
+        internet2ProbeConstruct();
         System.out.println(System.nanoTime() - start);
 
         start = System.nanoTime();
@@ -255,6 +300,7 @@ public class P4Tester {
         System.out.println(System.nanoTime() - start);
 
         start = System.nanoTime();
+        this.buildInternet2ST();
         generateProbes();
         System.out.println(System.nanoTime() - start);
 
@@ -280,6 +326,47 @@ public class P4Tester {
         };
 
         executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+
+    }
+
+    public void startStanford() {
+        long start = System.nanoTime();
+        stanfordProbeConstruct();
+        System.out.println(System.nanoTime() - start);
+
+        start = System.nanoTime();
+        buildBDDTreeFast();
+        System.out.println(System.nanoTime() - start);
+
+
+        start = System.nanoTime();
+        this.buildStanfordST();
+        generateProbes();
+        System.out.println(System.nanoTime() - start);
+
+        System.out.println("Probes: " + this.probeSets.size());
+
+        start = System.nanoTime();
+        removeRule("hous", "35.0.0.0/8");
+        System.out.println(System.nanoTime() - start);
+
+        start = System.nanoTime();
+        addRule("hous", "35.0.0.0/8", "1", "2");
+        System.out.println(System.nanoTime() - start);
+
+
+        P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
+        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                // System.out.println(probeSets.size());
+                probeProcessor.injectProbes();
+            }
+        };
+
+       executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
 
     }
 
@@ -342,7 +429,7 @@ public class P4Tester {
             }
         }
 
-        System.out.println(this.probeSets.size());
+        // System.out.println(this.probeSets.size());
         // int count = 0;
         // for (Router router : this.routers) {
             // count += router.getProbeSets().size();
@@ -379,19 +466,69 @@ public class P4Tester {
         this.root = this.routers.get(0);
     }
 
+
+    private void buildStanfordST() {
+        ArrayList<Router> children = new ArrayList<>();
+        children.add(this.routers.get(1));
+        children.add(this.routers.get(2));
+        children.add(this.routers.get(3));
+
+        this.topoMap.put(STANFORD_ROUTERS[0], children);
+
+        children = new ArrayList<>();
+        children.add(this.routers.get(4));
+        children.add(this.routers.get(5));
+
+        this.topoMap.put(STANFORD_ROUTERS[1], children);
+
+        children = new ArrayList<>();
+        children.add(this.routers.get(6));
+        children.add(this.routers.get(7));
+
+        this.topoMap.put(STANFORD_ROUTERS[2], children);
+
+        children = new ArrayList<>();
+        children.add(this.routers.get(8));
+        children.add(this.routers.get(9));
+        children.add(this.routers.get(10));
+
+        this.topoMap.put(STANFORD_ROUTERS[3], children);
+
+        children = new ArrayList<>();
+        children.add(this.routers.get(11));
+        children.add(this.routers.get(12));
+        children.add(this.routers.get(13));
+
+        this.topoMap.put(STANFORD_ROUTERS[5], children);
+
+
+        children = new ArrayList<>();
+        children.add(this.routers.get(14));
+        children.add(this.routers.get(15));
+
+        this.topoMap.put(STANFORD_ROUTERS[10], children);
+
+
+        this.root = this.routers.get(0);
+    }
+
+
+
     public ArrayList<SwitchPortPair> getPath() {
         return path;
     }
 
     public void generateProbes() {
-        this.buildInternet2ST();
-
         traverseST(root);
     }
 
     private void traverseST(Router router) {
-        for (NetworkProbeSet probeSet:router.getNetworkProbeSets()) {
+        try {
+            for (NetworkProbeSet probeSet : router.getNetworkProbeSets()) {
                 probeSet.traverse(router, this.path.size());
+            }
+        } catch (Exception e) {
+            System.out.println(router.getName());
         }
 
         if (this.topoMap.containsKey(router.getName())) {
@@ -403,7 +540,7 @@ public class P4Tester {
         }
     }
 
-    public void probeConstruct() {
+    public void internet2ProbeConstruct() {
         ArrayList<Thread> constructors = new ArrayList<>();
         for (String s: INTERNET2_ROUTERS) {
             String fileName = "resource/Internet2/" +  s + "-show_route_forwarding-table_table_default.xml";
@@ -429,8 +566,36 @@ public class P4Tester {
         }
     }
 
+    public void stanfordProbeConstruct() {
+        ArrayList<Thread> constructors = new ArrayList<>();
+        for (String s: STANFORD_ROUTERS) {
+            String fileName = "resource/Stanford_backbone/" + s + "_rtr.txt";
+            // Thread t = new Thread(new P4TesterProbeSetConstructor(this, s, fileName));
+            //t.run();
+            this.parseCompressedStanford(s, fileName);
+            // constructors.add(t);
+        }
+        for (Thread constructor: constructors) {
+            constructor.start();
+        }
+
+        for (Thread constructor: constructors) {
+            try {
+                constructor.join();
+            }
+            catch (Exception e) {
+                System.out.println("JOIN");
+                e.printStackTrace();
+            }
+        }
+        for (Router router:this.routers) {
+            router.buildTree();
+        }
+    }
+
+
     public void internalTest() {
-        // this.encodeInternet2("", "resource/Internet2/hous-show_route_forwarding-table_table_default.xml");
+        // this.parseInternet2("", "resource/Internet2/hous-show_route_forwarding-table_table_default.xml");
         this.encodeStanford("bbra", "resource/Stanford_backbone/bbra_rtr_route.txt");
         System.out.println(this.routers.get(0).getRules().size());
     }
@@ -478,6 +643,6 @@ class P4TesterProbeSetConstructor implements Runnable {
     }
     @Override
     public void run() {
-        this.p4tester.encodeInternet2(router, fileName);
+        this.p4tester.parseInternet2(router, fileName);
     }
 }

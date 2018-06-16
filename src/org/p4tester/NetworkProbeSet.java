@@ -2,11 +2,11 @@ package org.p4tester;
 
 import org.p4tester.packet.Ethernet;
 import org.p4tester.packet.IPv4;
-import org.p4tester.packet.SR;
 import org.p4tester.packet.UDP;
 import org.projectfloodlight.openflow.types.EthType;
 import org.projectfloodlight.openflow.types.IpProtocol;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -15,12 +15,12 @@ public class NetworkProbeSet extends ProbeSet {
     private ArrayList<SwitchProbeSet> switchProbeSets;
     private ArrayList<Integer> paths;
     private HashMap<String, Integer> recordRouterMap;
-    private static final int MAX = 9;
+    private static final int MAX = 20;
     private int count;
     private P4TesterBDD bdd;
     private int update;
     private P4Tester tester;
-    private ArrayList<Ethernet> probes;
+    private ArrayList<byte[]> probes;
 
     NetworkProbeSet(P4TesterBDD bdd, P4Tester p4Tester) {
         super(-1);
@@ -66,9 +66,13 @@ public class NetworkProbeSet extends ProbeSet {
 
     public void updatePaths() {
         this.recordRouterMap.clear();
-        for (int i = 0; i < this.tester.getPath().size(); i++) {
+        this.paths.clear();
+        this.count = 0;
+        for (int i = 0; i < this.tester.getPath().size(); i ++) {
             SwitchPortPair pair = this.tester.getPath().get(i);
-            this.traverse(pair.getRouter(), i);
+            if (routers.contains(pair.getRouter())) {
+                this.traverse(pair.getRouter(), i);
+            }
         }
     }
 
@@ -112,12 +116,13 @@ public class NetworkProbeSet extends ProbeSet {
         return super.equals(obj);
     }
 
-    public ArrayList<Ethernet> generateProbes() {
+    public ArrayList<byte[]> generateProbes() {
         ArrayList<SwitchPortPair> path = this.tester.getPath();
         if (this.update == 0) {
             this.probes.clear();
 
             int[] ipBytes = this.bdd.oneSATArray(this.match);
+
             int dstIp = 0;
             for (int b:ipBytes) {
                 dstIp <<= 8;
@@ -125,24 +130,29 @@ public class NetworkProbeSet extends ProbeSet {
             }
 
             Ethernet ethernet = new Ethernet();
-            ethernet.setDestinationMACAddress("11:11:11:11:11:11")
-                    .setSourceMACAddress("11:11:11:11:11:11")
+
+            byte[] bytes = {0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+            ethernet.setDestinationMACAddress(bytes)
+                    .setSourceMACAddress(bytes)
                     .setEtherType(EthType.IPv4);
 
+
+
             IPv4 ip = new IPv4();
-            ip.setProtocol(IpProtocol.UDP);
-            ip.setDestinationAddress(dstIp);
+            ip.setProtocol(IpProtocol.UDP)
+                    .setDestinationAddress(dstIp);
+
 
 
             UDP udp = new UDP();
             udp.setDestinationPort((short) 11);
 
             ip.setPayload(udp);
-
             ethernet.setPayload(ip);
 
 
             this.updatePaths();
+
 
             for (int i = 0; i < paths.size() - 1; i += 2) {
                 int start = paths.get(i);
@@ -152,36 +162,28 @@ public class NetworkProbeSet extends ProbeSet {
 
                 ArrayList<Short> portList = tester.getForwardPortList(startPair.getRouter().getName());
 
-                Ethernet probe = (Ethernet) ethernet.clone();
-
-
-
-                ArrayList<SR> srs =  new ArrayList<>();
+                ArrayList<Short> srs =  new ArrayList<>();
 
 
                 for (short p:portList) {
-                    SR tmp = new SR();
-
-                    tmp.setF((short) 0).setPort(p);
-                    srs.add(tmp);
+                    srs.add((short)(p<<1));
 
                 }
 
                 for (int j = start; j < end; j++) {
                     short p = path.get(j).getPort();
-                    SR tmp = new SR();
                     if (recordRouterMap.keySet().contains(path.get(j).getRouter().getName())) {
                         int k = recordRouterMap.get(path.get(j).getRouter().getName());
                         if (k == j) {
-                            tmp.setF((short) 1).setPort(p);
+                            srs.add((short)((p<<1)|1));
                         } else {
-                            tmp.setF((short) 0).setPort(p);
+                            srs.add((short)(p<<1));
                         }
                     } else {
-                        tmp.setF((short) 0).setPort(p);
+                        srs.add((short)(p<<1));
                     }
-                    srs.add(tmp);
                 }
+
 
                 if (srs.size() == portList.size()) {
                     continue;
@@ -189,16 +191,22 @@ public class NetworkProbeSet extends ProbeSet {
 
                 portList = tester.getBackwordPortList(endPair.getRouter().getName());
 
-
                 for (short p:portList) {
-                    SR tmp = new SR();
-                    tmp.setF((short) 0).setPort(p);
-                    srs.add(tmp);
+                    srs.add((short)(p<<1));
                 }
 
-                probe.getPayload().getPayload().setPayload(srs.get(0));
-                for (int j = 0; j < srs.size() - 1; j ++) {
-                    srs.get(i).setPayload(srs.get(i + 1));
+
+                byte[] header = ethernet.serialize();
+
+
+
+                byte[] probe = new byte[header.length + srs.size()*2];
+                ByteBuffer byteBuffer = ByteBuffer.wrap(probe);
+
+                byteBuffer.put(header);
+
+                for (Short sr: srs) {
+                    byteBuffer.putShort(sr);
                 }
 
                 this.probes.add(probe);
@@ -212,4 +220,7 @@ public class NetworkProbeSet extends ProbeSet {
         return probes;
     }
 
+    public ArrayList<Integer> getPaths() {
+        return paths;
+    }
 }

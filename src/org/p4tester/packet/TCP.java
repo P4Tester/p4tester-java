@@ -219,8 +219,8 @@ public class TCP extends BasePacket {
 
 				int bufferlength = length + 12;
 				boolean odd = length % 2 == 1;
-				byte[] source = ipv4.getSourceAddress().getBytes();
-				byte[] destination = ipv4.getDestinationAddress().getBytes();
+				byte[] source = new byte[]{0}; // ipv4.getSourceAddress();
+				byte[] destination = new byte[]{0};// ipv4.getDestinationAddress();
 
 				if (odd) {
 					++bufferlength;
