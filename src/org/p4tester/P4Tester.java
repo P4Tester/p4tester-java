@@ -75,6 +75,32 @@ public class P4Tester {
             "yozb"
     };
 
+    private static final String[] UNVv6_ROUTERS = {
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23"
+    };
+
     P4Tester(P4TesterBDD bdd) {
         this.bdd = bdd;
         this.routerMap = new HashMap<>();
@@ -222,6 +248,74 @@ public class P4Tester {
             e.printStackTrace();
         }
 
+    }
+
+    public void parseUNVv6(String routerName, String fileName){
+        try{
+            InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(fileName));
+            BufferedReader reader = new BufferedReader(inputStreamReader);
+            String line;
+            Router router = new Router(bdd, routerName);
+
+            for (int i =0 ;i < 13; i++) {
+                reader.readLine();
+            }
+            String match;
+            String port;
+            String nextHop;
+            while((line = reader.readLine()) != null){
+                match = null;
+                port = null;
+                nextHop = null;
+                if (line.contains("via")) {
+                    continue;
+                }
+                try{
+                    String[] info = line.split(" |,");
+                    for (String i : info) {
+                        if (match == null && i.contains(":")) {
+                            match = i;
+                            //System.out.println(match);
+                        }else if (nextHop == null) {
+                            if (i.contains(":") && !i.contains("/")) {
+                                nextHop = i;
+                                //System.out.println(nextHop);
+                            }
+                        }
+                    }
+                    if (nextHop == null){
+                        line = reader.readLine();
+                        if(line== null) {
+                            break;
+                        }
+                        info = line.split(" |,");
+
+                        for (String i : info) {
+                            if (nextHop == null) {
+                                if (i.contains(":") && !i.contains("/")) {
+                                    nextHop = i;
+                                    //System.out.println(nextHop);
+                                }
+                            }
+                            //port = i;
+                        }
+                    }
+                    router.addIPv6withPrefix(match, port, nextHop);
+                    router.generateProbeSets();
+                    this.routers.add(router);
+                    routerMap.put(routerName, router);
+                    inputStreamReader.close();
+                    reader.close();
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+
+            }
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
 
@@ -386,7 +480,7 @@ public class P4Tester {
             executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
         }
 
-       //
+        //
 
     }
 
@@ -452,8 +546,8 @@ public class P4Tester {
         // System.out.println(this.probeSets.size());
         // int count = 0;
         // for (Router router : this.routers) {
-            // count += router.getProbeSets().size();
-            // System.out.println(count);
+        // count += router.getProbeSets().size();
+        // System.out.println(count);
         //}
         // this.probeSets = tree.getLeafNodes();
     }
