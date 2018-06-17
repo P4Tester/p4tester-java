@@ -54,8 +54,12 @@ public class NetworkProbeSet extends ProbeSet {
         }
     }
 
-    public ArrayList<SwitchProbeSet> getSwitchProbeSet() {
+    public ArrayList<SwitchProbeSet> getSwitchProbeSets() {
         return switchProbeSets;
+    }
+
+    public void removeSwitchProbeSet(SwitchProbeSet switchProbeSet) {
+        this.switchProbeSets.remove(switchProbeSet);
     }
 
     @Override

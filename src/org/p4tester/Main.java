@@ -7,7 +7,20 @@ public class Main {
         P4TesterBDD bdd = new P4TesterBDD(32);
 
         P4Tester p4tester = new P4Tester(bdd);
-        // p4tester.internalTest();
-        p4tester.startInternet2();
+        if (args.length == 0) {
+            p4tester.internalTest();
+        } if (args.length == 1) {
+            if (args[0].equals("internet2")) {
+                p4tester.startInternet2(false, false);
+            } else {
+                p4tester.startInternet2(false, false);
+            }
+        } if (args.length == 2) {
+            if (args[0].equals("internet2")) {
+                p4tester.startInternet2(true, false);
+            } else {
+                p4tester.startInternet2(true, false);
+            }
+        }
     }
 }

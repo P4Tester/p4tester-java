@@ -79,7 +79,6 @@ public class Router {
     private static final int MAX_RULES = 20000;
     private boolean enablePriorityChecking;
     private BDDTree tree;
-    private ArrayList<BDDTreeNode> expiredNodes;
     // private BDDTree complementTree;
 
     enum RULE_UPDATE_OPERATIONS {
@@ -95,8 +94,6 @@ public class Router {
         this.switchProbeSets = new ArrayList<>();
         this.networkProbeSets = new ArrayList<>();
         this.enablePriorityChecking = false;
-
-        this.expiredNodes = new ArrayList<>();
 
         // BDDTreeNode rootNode = new BDDTreeNode(bdd, 0, 0);
 
@@ -275,6 +272,87 @@ public class Router {
         // System.out.println(count);
     }
 
+    public void regenerateProbeSets() {
+        for (SwitchProbeSet switchProbeSet:this.switchProbeSets) {
+            switchProbeSet.getNetworkProbeSet().removeSwitchProbeSet(switchProbeSet);
+        }
+
+        this.switchProbeSets.clear();
+        this.networkProbeSets.clear();
+
+        int[] prefixMap = new int[34];
+        int[] ruleIds = new int[this.rules.size()];
+        for (RouterRule r:this.rules) {
+            prefixMap[r.getPrefix()] ++;
+        }
+
+        for (int i = 31; i >= 0  ; i--) {
+            prefixMap[i] += prefixMap[i + 1];
+        }
+
+        for (int i = 0; i < this.rules.size(); i++) {
+            try {
+                int var = -- prefixMap[rules.get(i).getPrefix()];
+                ruleIds[var] = i;
+            } catch (Exception e) {
+                System.out.println(ruleIds.length);
+                System.out.println(prefixMap[i]);
+            }
+        }
+        int[] tmp_rules = new int[this.rules.size()];
+        int Ha = bdd.getTrue();
+        for (int i = 0; i < ruleIds.length; i++) {
+            int rid_i = ruleIds[i];
+            int r = this.rules.get(rid_i).getMatchBdd();
+            // System.out.println(prefixes.get(rid_i));
+            tmp_rules[i] = bdd.and(r, Ha);
+            Ha = bdd.subtract(Ha, tmp_rules[i]);
+        }
+
+        // int count = 0;
+        for (int i = 0; i < ruleIds.length; i++) {
+            RouterRule rule_i = rules.get(ruleIds[i]);
+            int r = rule_i.getMatchBdd();
+            // System.out.println(prefixes.get(rid_i));
+            int rh = tmp_rules[i];
+            // this.bdd.print(this.bdd.oneSAT(rh));
+//            Ha = bdd.subtract(Ha, rh);
+            if (this.bdd.oneSAT(rh) != 0) {
+                int Hb = rh;
+                if (this.enablePriorityChecking) {
+
+                    for (int j = prefixMap[rule_i.getPrefix() - 1]; j < ruleIds.length; j++) {
+                        RouterRule rule_j = rules.get(ruleIds[j]);
+                        int override = this.bdd.and(Hb, tmp_rules[j]);
+
+                        if (this.bdd.oneSAT(override) != 0) {
+                            if (!rule_i.getPort().equals(rule_j.getPort())) {
+                                SwitchProbeSet switchProbeSet = new SwitchProbeSet(rule_i, override, this, rule_j.getPrefix());
+                                rule_i.addSwitchProbeSet(switchProbeSet);
+                                switchProbeSets.add(switchProbeSet);
+                            } else {
+
+                            }
+                            Hb = this.bdd.subtract(Hb, override);
+                        }
+                    }
+                }
+                if (this.bdd.oneSAT(Hb) != 0) {
+                    SwitchProbeSet switchProbeSet = new SwitchProbeSet(rule_i, Hb, this, 0);
+                    rule_i.addSwitchProbeSet(switchProbeSet);
+                    switchProbeSets.add(switchProbeSet);
+                }
+            }
+            //else {
+            // count ++;
+            // System.out.println(i);
+            // }
+        }
+        // System.out.println(count);
+    }
+
+
+
     public ArrayList<SwitchProbeSet> getSwitchProbeSets() {
         return this.switchProbeSets;
     }
@@ -342,7 +420,18 @@ public class Router {
         return Integer.valueOf(ipv4[1]);
     }
 
+    public RouterRule addRule(String match,
+                        String port,
+                        String nextHop) {
+        int matchBdd = this.getMatchBdd(match);
+        RouterRule routerRule = new RouterRule(match, matchBdd,
+                getPrefix(match), port, nextHop);
+        this.rules.add(routerRule);
+        this.ruleHashMap.put(match, routerRule);
+        return routerRule;
+    }
 
+    @Deprecated
     public ArrayList<SwitchProbeSet> addRuleWithPriority(String match,
                                                              String port,
                                                              String nextHop) {
@@ -447,6 +536,7 @@ public class Router {
         return bddRules;
     }
 
+
     public ArrayList<NetworkProbeSet> removeRule(String match) {
         RouterRule rule = this.ruleHashMap.get(match);
 
@@ -480,7 +570,6 @@ public class Router {
         }
         return networkProbeSets;
     }
-
 
     public ArrayList<NetworkProbeSet> getNetworkProbeSets() {
         return networkProbeSets;

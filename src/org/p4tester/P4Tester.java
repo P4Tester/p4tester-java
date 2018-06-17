@@ -289,84 +289,98 @@ public class P4Tester {
     }
 
 
-    public void startInternet2() {
+    public void startInternet2(boolean fast, boolean inject) {
         long start = System.nanoTime();
         internet2ProbeConstruct();
-        System.out.println(System.nanoTime() - start);
+        System.out.println("Step1 :" + (System.nanoTime() - start));
 
         start = System.nanoTime();
         buildBDDTreeFast();
-        System.out.println(System.nanoTime() - start);
-
-        start = System.nanoTime();
-        this.buildInternet2ST();
-        generateProbes();
-        System.out.println(System.nanoTime() - start);
-
-        System.out.println("Probes: " + this.probeSets.size());
-
-        start = System.nanoTime();
-        removeRule("hous", "35.0.0.0/8");
-        System.out.println(System.nanoTime() - start);
-
-        start = System.nanoTime();
-        addRule("hous", "35.0.0.0/8", "1", "2");
-        System.out.println(System.nanoTime() - start);
-
-
-        P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
-
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                // System.out.println(probeSets.size());
-                probeProcessor.injectProbes();
-            }
-        };
-
-        // executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
-
-    }
-
-    public void startStanford() {
-        long start = System.nanoTime();
-        stanfordProbeConstruct();
-        System.out.println(System.nanoTime() - start);
-
-        start = System.nanoTime();
-        buildBDDTreeFast();
-        System.out.println(System.nanoTime() - start);
+        System.out.println("Step2 :" + (System.nanoTime() - start));
 
 
         start = System.nanoTime();
         this.buildStanfordST();
         generateProbes();
-        System.out.println(System.nanoTime() - start);
+        System.out.println("Step3 :" + (System.nanoTime() - start));
+
 
         System.out.println("Probes: " + this.probeSets.size());
 
         start = System.nanoTime();
         removeRule("hous", "35.0.0.0/8");
-        System.out.println(System.nanoTime() - start);
+        System.out.println("Remove Rule :" + (System.nanoTime() - start));
 
         start = System.nanoTime();
-        addRule("hous", "35.0.0.0/8", "1", "2");
-        System.out.println(System.nanoTime() - start);
+        if (fast) {
+            addRuleFast("hous", "35.0.0.0/8", "1", "2");
+        } else {
+            addRule("hous", "35.0.0.0/8", "1", "2");
+        }
+        System.out.println("Add Rule :" + (System.nanoTime() - start));
 
 
-        P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+        if (inject) {
+            P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
 
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                // System.out.println(probeSets.size());
-                probeProcessor.injectProbes();
-            }
-        };
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    // System.out.println(probeSets.size());
+                    probeProcessor.injectProbes();
+                }
+            };
+            executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+        }
 
-       // executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+        // executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+    }
+
+    public void startStanford(boolean fast, boolean inject) {
+        long start = System.nanoTime();
+        stanfordProbeConstruct();
+        System.out.println("Step1 :" + (System.nanoTime() - start));
+
+        start = System.nanoTime();
+        buildBDDTreeFast();
+        System.out.println("Step2 :" + (System.nanoTime() - start));
+
+
+        start = System.nanoTime();
+        this.buildStanfordST();
+        generateProbes();
+        System.out.println("Step3 :" + (System.nanoTime() - start));
+
+        System.out.println("Probes: " + this.probeSets.size());
+
+        start = System.nanoTime();
+        removeRule("hous", "35.0.0.0/8");
+        System.out.println("Remove Rule :" + (System.nanoTime() - start));
+
+        start = System.nanoTime();
+        if (fast) {
+            addRuleFast("hous", "35.0.0.0/8", "1", "2");
+        } else {
+            addRule("hous", "35.0.0.0/8", "1", "2");
+        }
+        System.out.println("Add Rule :" + (System.nanoTime() - start));
+
+        if (inject) {
+            P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    // System.out.println(probeSets.size());
+                    probeProcessor.injectProbes();
+                }
+            };
+            executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+        }
+
+       //
 
     }
 
@@ -437,6 +451,8 @@ public class P4Tester {
         //}
         // this.probeSets = tree.getLeafNodes();
     }
+
+
 
     private void buildInternet2ST() {
         ArrayList<Router> children = new ArrayList<>();
@@ -601,30 +617,64 @@ public class P4Tester {
     }
 
 
-    public void removeRule(String routerName, String match) {
-        Router router = this.routerMap.get(routerName);
-        if (router != null) {
-            ArrayList<NetworkProbeSet> networkProbeSets = router.removeRule(match);
-            // System.out.println(networkProbeSets.size());
-            for (NetworkProbeSet networkProbeSet: networkProbeSets) {
-                // System.out.println(networkProbeSet == null);
-                if (networkProbeSet.getRouters().size() == 1) {
-                    this.probeSets.remove(networkProbeSet);
-                } else {
-                    networkProbeSet.removeRouter(router);
+    public void updateRule(Router router) {
+        router.regenerateProbeSets();
+        router.buildTree();
+        for (NetworkProbeSet probeSet:this.probeSets) {
+            BDDTreeNode node = router.getTree().query(probeSet.getMatch());
+            if (node != null) {
+                probeSet.addRouter(router);
+                int var = this.bdd.and(probeSet.getMatch(), node.getMatch());
+                probeSet.setMatch(var);
+                probeSet.addSwitchProbeSet(node.getSwitchProbeSet());
+                node.getSwitchProbeSet().setNetworkProbeSet(probeSet);
+                router.addNetworkProbeSets(probeSet);
+            } else {
+                if (probeSet.getRouters().contains(router)) {
+                    probeSet.getRouters().remove(router);
+                    if (probeSet.getRouters().size() == 0) {
+                        this.probeSets.remove(probeSet);
+                    }
                 }
+            }
+        }
+        for (SwitchProbeSet switchProbeSet:router.getSwitchProbeSets()) {
+            if (switchProbeSet.getNetworkProbeSet() == null) {
+                NetworkProbeSet networkProbeSet = new NetworkProbeSet(this.bdd, this);
+                networkProbeSet.setMatch(switchProbeSet.getMatch());
+                networkProbeSet.addRouter(router);
+                switchProbeSet.setNetworkProbeSet(networkProbeSet);
+                this.probeSets.add(networkProbeSet);
             }
         }
     }
 
-
-    public void addRule(String routerName, String match, String port, String nexthop) {
+    public void removeRule(String routerName, String match) {
         Router router = this.routerMap.get(routerName);
         if (router != null) {
-            ArrayList<SwitchProbeSet> switchProbeSets = router.addRuleWithPriority(match, port, nexthop);
-            for (SwitchProbeSet switchProbeSet:switchProbeSets) {
+            router.removeRule("35.0.0.0/8");
+            updateRule(router);
+        }
+    }
+
+
+    public void addRule(String routerName, String match, String port, String nextHop) {
+        Router router = this.routerMap.get(routerName);
+        if (router != null) {
+            router.addRule(match, port, nextHop);
+            updateRule(router);
+        }
+    }
+
+    public void addRuleFast(String routerName, String match, String port, String nextHop) {
+        Router router = this.routerMap.get(routerName);
+        if (router != null) {
+            RouterRule rule = router.addRule(match, port, nextHop);
+            int var = this.bdd.subtract(router.getTree().getRoot().getMatch(), rule.getMatchBdd());
+            if (this.bdd.oneSAT(var) != 0) {
                 NetworkProbeSet networkProbeSet = new NetworkProbeSet(bdd, this);
-                networkProbeSet.addSwitchProbeSet(switchProbeSet);
+                networkProbeSet.setMatch(var);
+                networkProbeSet.addRouter(router);
                 this.probeSets.add(networkProbeSet);
             }
         }
