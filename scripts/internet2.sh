@@ -18,3 +18,4 @@ cat internet2.txt|grep Step2 >internet2_step2.txt
 cat internet2.txt|grep Step3 >internet2_step3.txt
 cat internet2.txt|grep Add >internet2_add.txt
 cat internet2.txt|grep Remove >internet2_remove.txt
+cat internet2_fast.txt|grep Add >internet2_add_fast.txt

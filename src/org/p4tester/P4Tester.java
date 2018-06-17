@@ -333,8 +333,6 @@ public class P4Tester {
             };
             executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
         }
-
-        // executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
     }
 
     public void startStanford(boolean fast, boolean inject) {

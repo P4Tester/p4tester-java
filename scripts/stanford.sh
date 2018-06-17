@@ -18,3 +18,4 @@ cat stanford.txt|grep Step2 >stanford_step2.txt
 cat stanford.txt|grep Step3 >stanford_step3.txt
 cat stanford.txt|grep Add >stanford_add.txt
 cat stanford.txt|grep Remove >stanford_remove.txt
+cat stanford_fast.txt|grep Add >stanford_add_fast.txt
