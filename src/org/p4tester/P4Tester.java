@@ -307,15 +307,19 @@ public class P4Tester {
 
         System.out.println("Probes: " + this.probeSets.size());
 
+        int routerId = (int) (this.routers.size()*Math.random());
+        Router router = routers.get(routerId);
+        int ruleId = (int) (router.getRules().size()*Math.random());
+        RouterRule rule = router.getRules().get(ruleId);
         start = System.nanoTime();
-        removeRule("hous", "35.0.0.0/8");
+        removeRule(router.getName(), rule.getMatchIp());
         System.out.println("Remove Rule :" + (System.nanoTime() - start));
 
         start = System.nanoTime();
         if (fast) {
-            addRuleFast("hous", "35.0.0.0/8", "1", "2");
+            addRuleFast(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
         } else {
-            addRule("hous", "35.0.0.0/8", "1", "2");
+            addRule(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
         }
         System.out.println("Add Rule :" + (System.nanoTime() - start));
 
@@ -352,15 +356,19 @@ public class P4Tester {
 
         System.out.println("Probes: " + this.probeSets.size());
 
+        int routerId = (int) (this.routers.size()*Math.random());
+        Router router = routers.get(routerId);
+        int ruleId = (int) (router.getRules().size()*Math.random());
+        RouterRule rule = router.getRules().get(ruleId);
         start = System.nanoTime();
-        removeRule("hous", "35.0.0.0/8");
+        removeRule(router.getName(), rule.getMatchIp());
         System.out.println("Remove Rule :" + (System.nanoTime() - start));
 
         start = System.nanoTime();
         if (fast) {
-            addRuleFast("hous", "35.0.0.0/8", "1", "2");
+            addRuleFast(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
         } else {
-            addRule("hous", "35.0.0.0/8", "1", "2");
+            addRule(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
         }
         System.out.println("Add Rule :" + (System.nanoTime() - start));
 

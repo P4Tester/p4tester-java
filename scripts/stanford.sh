@@ -3,14 +3,14 @@
 
 for ((i=1; i<=1000; i ++))
 do
-java -jar ../build/p4tester.jar stanford >>stanford.txt
+java -jar build/p4tester.jar stanford >>stanford.txt
 done
 
 >stanford_fast.txt
 
 for ((i=1; i<=1000; i ++))
 do
-java -jar ../build/p4tester.jar stanford fast >>stanford_fast.txt
+java -jar build/p4tester.jar stanford fast >>stanford_fast.txt
 done
 
 cat stanford.txt|grep Step1 >stanford_step1.txt

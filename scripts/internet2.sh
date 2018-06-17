@@ -3,7 +3,7 @@
 
 for ((i=1; i<=1000; i ++))
 do
-java -jar ../build/p4tester.jar internet2 >>internet2.txt
+java -jar build/p4tester.jar internet2 >>internet2.txt
 done
 
 >internet2_fast.txt
