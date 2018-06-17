@@ -5,7 +5,6 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -304,6 +303,7 @@ public class P4Tester {
         generateProbes();
         System.out.println(System.nanoTime() - start);
 
+        System.out.println("Probes: " + this.probeSets.size());
 
         start = System.nanoTime();
         removeRule("hous", "35.0.0.0/8");
@@ -325,7 +325,7 @@ public class P4Tester {
             }
         };
 
-        executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+        // executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
 
     }
 
@@ -366,7 +366,7 @@ public class P4Tester {
             }
         };
 
-       executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+       // executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
 
     }
 

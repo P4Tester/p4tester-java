@@ -1,6 +1,5 @@
 package org.p4tester;
 
-import javax.print.attribute.standard.NumberUp;
 import java.util.ArrayList;
 
 class BDDTreeNode extends ProbeSet {

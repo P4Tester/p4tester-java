@@ -26,7 +26,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.projectfloodlight.openflow.types.IPv4Address;
 import org.projectfloodlight.openflow.types.IpProtocol;
 import org.projectfloodlight.openflow.types.U8;
 
