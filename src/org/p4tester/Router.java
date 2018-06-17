@@ -69,16 +69,16 @@ class RouterRule {
 }
 
 public class Router {
-    private HashMap<String, RouterRule> ruleHashMap;
-    private ArrayList<RouterRule> rules ;
-    private P4TesterBDD bdd;
-    private String name;
-    private ArrayList<String> localIps;
-    private ArrayList<SwitchProbeSet> switchProbeSets;
-    private ArrayList<NetworkProbeSet> networkProbeSets;
-    private static final int MAX_RULES = 20000;
-    private boolean enablePriorityChecking;
-    private BDDTree tree;
+    HashMap<String, RouterRule> ruleHashMap;
+    ArrayList<RouterRule> rules ;
+    P4TesterBDD bdd;
+    String name;
+    ArrayList<String> localIps;
+    ArrayList<SwitchProbeSet> switchProbeSets;
+    ArrayList<NetworkProbeSet> networkProbeSets;
+    static int MAX_RULES = 20000;
+    boolean enablePriorityChecking;
+    BDDTree tree;
     // private BDDTree complementTree;
 
     enum RULE_UPDATE_OPERATIONS {
@@ -200,13 +200,13 @@ public class Router {
     }
 
     public void generateProbeSets() {
-        int[] prefixMap = new int[34];
+        int[] prefixMap = new int[130];
         int[] ruleIds = new int[this.rules.size()];
         for (RouterRule r:this.rules) {
             prefixMap[r.getPrefix()] ++;
         }
 
-        for (int i = 31; i >= 0  ; i--) {
+        for (int i = 128; i >= 0  ; i--) {
             prefixMap[i] += prefixMap[i + 1];
         }
 

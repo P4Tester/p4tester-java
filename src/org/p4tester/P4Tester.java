@@ -255,7 +255,7 @@ public class P4Tester {
             InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(fileName));
             BufferedReader reader = new BufferedReader(inputStreamReader);
             String line;
-            Router router = new Router(bdd, routerName);
+            IPv6Router router = new IPv6Router(bdd, routerName);
 
             for (int i =0 ;i < 13; i++) {
                 reader.readLine();
@@ -304,15 +304,13 @@ public class P4Tester {
                     router.generateProbeSets();
                     this.routers.add(router);
                     routerMap.put(routerName, router);
-                    inputStreamReader.close();
-                    reader.close();
-
                 }catch (Exception e){
                     e.printStackTrace();
                 }
 
             }
-
+            inputStreamReader.close();
+            reader.close();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -484,6 +482,61 @@ public class P4Tester {
 
     }
 
+    public void startUNVv6(boolean fast, boolean inject) {
+
+        long start = System.nanoTime();
+        unvv6ProbeConstruct();
+        System.out.println("Step1 :" + (System.nanoTime() - start));
+
+        /*
+
+        start = System.nanoTime();
+        buildBDDTreeFast();
+        System.out.println("Step2 :" + (System.nanoTime() - start));
+
+
+        start = System.nanoTime();
+        this.buildInternet2ST();
+        generateProbes();
+        System.out.println("Step3 :" + (System.nanoTime() - start));
+
+
+        System.out.println("Probes: " + this.probeSets.size());
+
+        int routerId = (int) (this.routers.size()*Math.random());
+        Router router = routers.get(routerId);
+        int ruleId = (int) (router.getRules().size()*Math.random());
+        RouterRule rule = router.getRules().get(ruleId);
+        start = System.nanoTime();
+        removeRule(router.getName(), rule.getMatchIp());
+        System.out.println("Remove Rule :" + (System.nanoTime() - start));
+
+        start = System.nanoTime();
+        if (fast) {
+            addRuleFast(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
+        } else {
+            addRule(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
+        }
+        System.out.println("Add Rule :" + (System.nanoTime() - start));
+
+
+        if (inject) {
+            P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
+            ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    // System.out.println(probeSets.size());
+                    probeProcessor.injectProbes();
+                }
+            };
+            executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+        }
+        */
+    }
+
+
 
 
     public ArrayList<Short> getForwardPortList(String name) {
@@ -653,6 +706,33 @@ public class P4Tester {
                 traverseST(child);
                 path.add(new SwitchPortPair(router, child.getPort(router.getName())));
             }
+        }
+    }
+
+    public void unvv6ProbeConstruct() {
+        ArrayList<Thread> constructors = new ArrayList<>();
+        for (String s: UNVv6_ROUTERS) {
+            String fileName = "resource/Tsinghua_route/Tsinghua_route/" +  s + ".csv";
+            parseUNVv6(s, fileName);
+            // Thread t = new Thread(new P4TesterProbeSetConstructor(this, s, fileName));
+            // t.run();
+            // constructors.add(t);
+        }
+        for (Thread constructor: constructors) {
+            constructor.start();
+        }
+
+        for (Thread constructor: constructors) {
+            try {
+                constructor.join();
+            }
+            catch (Exception e) {
+                System.out.println("JOIN");
+                e.printStackTrace();
+            }
+        }
+        for (Router router:this.routers) {
+            router.buildTree();
         }
     }
 
