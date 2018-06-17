@@ -300,7 +300,7 @@ public class P4Tester {
 
 
         start = System.nanoTime();
-        this.buildStanfordST();
+        this.buildInternet2ST();
         generateProbes();
         System.out.println("Step3 :" + (System.nanoTime() - start));
 

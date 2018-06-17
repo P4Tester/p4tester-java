@@ -13,13 +13,13 @@ public class Main {
             if (args[0].equals("internet2")) {
                 p4tester.startInternet2(false, false);
             } else {
-                p4tester.startInternet2(false, false);
+                p4tester.startStanford(false, false);
             }
         } if (args.length == 2) {
             if (args[0].equals("internet2")) {
                 p4tester.startInternet2(true, false);
             } else {
-                p4tester.startInternet2(true, false);
+                p4tester.startStanford(true, false);
             }
         }
     }
