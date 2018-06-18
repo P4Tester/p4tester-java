@@ -39,21 +39,23 @@ header_type ipv4_t {
 }
 
 
-header_type ipv4_t {
+header_type udp_t {
     fields {
         dstPort : 16;
         srcPort : 16;
-	length : 16;
+	len : 16;
         checksum: 16;
     }
 }
+
+header udp_t udp;
 
 header_type sr_t {
     fields {
     	port : 8;
         padding : 6;
         s : 1;
-        f : 1;	
+        f : 1;
     }
 }
 
@@ -174,7 +176,7 @@ table ipv4_lpm {
 
 action record_test() {
     push(test_record, 1);
-    modify(test_record[0].port, standard_metadata.egress_spec);
+    modify_field(test_record[0].port, standard_metadata.egress_spec);
 }
 
 table record {
@@ -184,7 +186,7 @@ table record {
 }
 
 action p4tester_forward() {
-    modify(standard_metadata.egress_spec, sr[0].port);
+    modify_field(standard_metadata.egress_spec, sr[0].port);
     remove_header(sr[0]);
 }
 table forward {
