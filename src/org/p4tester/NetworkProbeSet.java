@@ -210,7 +210,7 @@ public class NetworkProbeSet extends ProbeSet {
 
 
 
-                byte[] probe = new byte[header.length + srs.size()*2];
+                byte[] probe = new byte[header.length + srs.size()*2 + 2]; // For test results
                 ByteBuffer byteBuffer = ByteBuffer.wrap(probe);
 
                 byteBuffer.put(header);
