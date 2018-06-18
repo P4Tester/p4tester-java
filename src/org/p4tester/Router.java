@@ -14,7 +14,6 @@ class RouterRule {
     private String nextHop;
     private ArrayList<SwitchProbeSet> switchProbeSets;
 
-
     RouterRule(String matchIp, int matchBdd, int prefix, String port, String nextHop) {
         this.matchIp = matchIp;
         this.matchBdd = matchBdd;

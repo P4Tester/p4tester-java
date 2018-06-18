@@ -45,15 +45,15 @@ public class P4Tester {
     private Router root;
     private ArrayList<SwitchPortPair> path;
     private static final String[] INTERNET2_ROUTERS = {
+            "chic"/*,
             "atla",
-            "chic",
             "hous",
             "kans",
             "losa",
-            "newy32aoa",
+            "newy32aoa" ,
             "salt",
-            "wash",
-            "seat"
+            "wash" ,
+            "seat" */
     };
 
     private static final String[] STANFORD_ROUTERS = {
@@ -243,7 +243,7 @@ public class P4Tester {
             routerMap.put(routerName, router);
             inputStreamReader.close();
             reader.close();
-            System.out.println(routerName + " " + router.getRules().size());
+            // System.out.println(routerName + " " + router.getRules().size());
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -382,22 +382,31 @@ public class P4Tester {
 
 
     public void startInternet2(boolean fast, boolean inject) {
+        long startAll = System.nanoTime();
         long start = System.nanoTime();
         internet2ProbeConstruct();
-        System.out.println("Step1 :" + (System.nanoTime() - start));
+ //       System.out.println("Step1 :" + (System.nanoTime() - start));
+        System.out.println((System.nanoTime() - start));
 
         start = System.nanoTime();
         buildBDDTreeFast();
-        System.out.println("Step2 :" + (System.nanoTime() - start));
-
+       // System.out.println("Step2 :" + (System.nanoTime() - start));
+        System.out.println((System.nanoTime() - start));
 
         start = System.nanoTime();
         this.buildInternet2ST();
         generateProbes();
-        System.out.println("Step3 :" + (System.nanoTime() - start));
+        //System.out.println("Step3 :" + (System.nanoTime() - start));
+        //System.out.println("Total :" + (System.nanoTime() - startAll));
+        System.out.println((System.nanoTime() - start));
 
+        int count = 0;
+        for (Router router:this.routers) {
+            count += router.getRules().size();
+        }
 
-        System.out.println("Probes: " + this.probeSets.size());
+        System.out.println(count);
+        System.out.println(this.probeSets.size());
 
         int routerId = (int) (this.routers.size()*Math.random());
         Router router = routers.get(routerId);
@@ -609,28 +618,28 @@ public class P4Tester {
 
     private void buildInternet2ST() {
         ArrayList<Router> children = new ArrayList<>();
-        children.add(this.routers.get(1));
-        children.add(this.routers.get(2));
-        children.add(this.routers.get(3));
+        //children.add(this.routers.get(1));
+        //children.add(this.routers.get(2));
+        //children.add(this.routers.get(3));
 
         this.topoMap.put(INTERNET2_ROUTERS[0], children);
 
         children = new ArrayList<>();
-        children.add(this.routers.get(4));
-        children.add(this.routers.get(5));
+        //children.add(this.routers.get(4));
+        //children.add(this.routers.get(5));
 
-        this.topoMap.put(INTERNET2_ROUTERS[1], children);
-
-        children = new ArrayList<>();
-        children.add(this.routers.get(6));
-        children.add(this.routers.get(7));
-
-        this.topoMap.put(INTERNET2_ROUTERS[2], children);
+        //this.topoMap.put(INTERNET2_ROUTERS[1], children);
 
         children = new ArrayList<>();
-        children.add(this.routers.get(8));
+        //children.add(this.routers.get(6));
+        //children.add(this.routers.get(7));
 
-        this.topoMap.put(INTERNET2_ROUTERS[5], children);
+        //this.topoMap.put(INTERNET2_ROUTERS[2], children);
+
+        children = new ArrayList<>();
+        //children.add(this.routers.get(8));
+
+        //this.topoMap.put(INTERNET2_ROUTERS[5], children);
 
         this.root = this.routers.get(0);
     }
