@@ -436,7 +436,7 @@ public class P4Tester {
                     probeProcessor.injectProbes();
                 }
             };
-            executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+            executor.scheduleAtFixedRate(runnable, 1, 3, TimeUnit.SECONDS);
         }
     }
 
@@ -487,7 +487,7 @@ public class P4Tester {
                     //}
                 }
             };
-            executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
+            executor.scheduleAtFixedRate(runnable, 1, 3, TimeUnit.SECONDS);
         }
 
         //
