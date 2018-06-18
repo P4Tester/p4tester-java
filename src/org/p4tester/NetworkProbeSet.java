@@ -129,7 +129,7 @@ public class NetworkProbeSet extends ProbeSet {
 
             int dstIp = 0;
             for (int b:ipBytes) {
-                dstIp <<= 8;
+                dstIp <<= 1;
                 dstIp += b;
             }
 

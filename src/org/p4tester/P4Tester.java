@@ -482,6 +482,9 @@ public class P4Tester {
                 public void run() {
                     // System.out.println(probeSets.size());
                     probeProcessor.injectProbes();
+                    // for (NetworkProbeSet networkProbeSet:probeSets) {
+                    //    networkProbeSet.generateProbes();
+                    //}
                 }
             };
             executor.scheduleAtFixedRate(runnable, 1, 1, TimeUnit.SECONDS);
