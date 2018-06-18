@@ -450,260 +450,26 @@
             "metadata": false
         },
         {
-            "name": "test_record[0]",
+            "name": "test_record",
             "id": 42,
             "header_type": "test_record_t",
             "metadata": false
         },
         {
-            "name": "test_record[1]",
-            "id": 43,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[2]",
-            "id": 44,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[3]",
-            "id": 45,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[4]",
-            "id": 46,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[5]",
-            "id": 47,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[6]",
-            "id": 48,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[7]",
-            "id": 49,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[8]",
-            "id": 50,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[9]",
-            "id": 51,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[10]",
-            "id": 52,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[11]",
-            "id": 53,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[12]",
-            "id": 54,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[13]",
-            "id": 55,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[14]",
-            "id": 56,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[15]",
-            "id": 57,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[16]",
-            "id": 58,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[17]",
-            "id": 59,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[18]",
-            "id": 60,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[19]",
-            "id": 61,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[20]",
-            "id": 62,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[21]",
-            "id": 63,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[22]",
-            "id": 64,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[23]",
-            "id": 65,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[24]",
-            "id": 66,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[25]",
-            "id": 67,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[26]",
-            "id": 68,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[27]",
-            "id": 69,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[28]",
-            "id": 70,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[29]",
-            "id": 71,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[30]",
-            "id": 72,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[31]",
-            "id": 73,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[32]",
-            "id": 74,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[33]",
-            "id": 75,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[34]",
-            "id": 76,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[35]",
-            "id": 77,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[36]",
-            "id": 78,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[37]",
-            "id": 79,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[38]",
-            "id": 80,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
-            "name": "test_record[39]",
-            "id": 81,
-            "header_type": "test_record_t",
-            "metadata": false
-        },
-        {
             "name": "ethernet",
-            "id": 82,
+            "id": 43,
             "header_type": "ethernet_t",
             "metadata": false
         },
         {
             "name": "ipv4",
-            "id": 83,
+            "id": 44,
             "header_type": "ipv4_t",
             "metadata": false
         },
         {
             "name": "routing_metadata",
-            "id": 84,
+            "id": 45,
             "header_type": "routing_metadata_t",
             "metadata": true
         }
@@ -755,54 +521,6 @@
                 39,
                 40,
                 41
-            ]
-        },
-        {
-            "name": "test_record",
-            "id": 1,
-            "size": 40,
-            "header_type": "test_record_t",
-            "header_ids": [
-                42,
-                43,
-                44,
-                45,
-                46,
-                47,
-                48,
-                49,
-                50,
-                51,
-                52,
-                53,
-                54,
-                55,
-                56,
-                57,
-                58,
-                59,
-                60,
-                61,
-                62,
-                63,
-                64,
-                65,
-                66,
-                67,
-                68,
-                69,
-                70,
-                71,
-                72,
-                73,
-                74,
-                75,
-                76,
-                77,
-                78,
-                79,
-                80,
-                81
             ]
         }
     ],
@@ -974,13 +692,13 @@
                             "type": "hexstr",
                             "value": "0x01",
                             "mask": null,
-                            "next_state": "parse_test_record"
+                            "next_state": null
                         },
                         {
                             "type": "default",
                             "value": null,
                             "mask": null,
-                            "next_state": null
+                            "next_state": "parse_test_record"
                         }
                     ]
                 },
@@ -993,7 +711,7 @@
                             "parameters": [
                                 {
                                     "type": "regular",
-                                    "value": "test_record[0]"
+                                    "value": "test_record"
                                 }
                             ]
                         }
@@ -1060,7 +778,7 @@
                 "sr[37]",
                 "sr[38]",
                 "sr[39]",
-                "test_record[0]"
+                "test_record"
             ]
         }
     ],
@@ -1198,15 +916,11 @@
             "runtime_data": [],
             "primitives": [
                 {
-                    "op": "push",
+                    "op": "add_header",
                     "parameters": [
                         {
-                            "type": "header_stack",
+                            "type": "header",
                             "value": "test_record"
-                        },
-                        {
-                            "type": "hexstr",
-                            "value": "0x1"
                         }
                     ]
                 },
@@ -1216,7 +930,7 @@
                         {
                             "type": "field",
                             "value": [
-                                "test_record[0]",
+                                "test_record",
                                 "port"
                             ]
                         },
@@ -1312,39 +1026,16 @@
                     "expression": {
                         "type": "expression",
                         "value": {
-                            "op": "and",
-                            "left": {
-                                "type": "expression",
-                                "value": {
-                                    "op": "valid",
-                                    "left": null,
-                                    "right": {
-                                        "type": "header",
-                                        "value": "ipv4"
-                                    }
-                                }
-                            },
+                            "op": "valid",
+                            "left": null,
                             "right": {
-                                "type": "expression",
-                                "value": {
-                                    "op": ">",
-                                    "left": {
-                                        "type": "field",
-                                        "value": [
-                                            "ipv4",
-                                            "ttl"
-                                        ]
-                                    },
-                                    "right": {
-                                        "type": "hexstr",
-                                        "value": "0x0"
-                                    }
-                                }
+                                "type": "header",
+                                "value": "ipv4"
                             }
                         }
                     },
                     "true_next": "ipv4_lpm",
-                    "false_next": "_condition_1"
+                    "false_next": null
                 },
                 {
                     "name": "_condition_1",

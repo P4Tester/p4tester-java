@@ -53,7 +53,7 @@ header_type test_record_t {
         }
 }
 
-header test_record_t test_record[40];
+header test_record_t test_record;
 
 parser start {
     return parse_ethernet;
@@ -117,7 +117,7 @@ parser parse_udp {
 }
 
 parser parse_test_record {
-    extract(test_record[0]);
+    extract(test_record);
     return ingress;
 }
 
@@ -125,8 +125,8 @@ parser parse_sr {
 	extract(sr[next]);
 	return select(latest.s) {
         0 : parse_sr;
-        1 : parse_test_record;
-        default : ingress;
+        1 : ingress;
+        default : parse_test_record;
     } 
 }
 
@@ -160,8 +160,8 @@ table ipv4_lpm {
 }
 
 action record_test() {
-    push(test_record, 1);
-    modify_field(test_record[0].port, standard_metadata.egress_spec);
+    add_header(test_record);
+    modify_field(test_record.port, standard_metadata.egress_spec);
 }
 
 table record {
@@ -185,7 +185,7 @@ control p4tester {
 }
 
 control ingress {
-    if(valid(ipv4) and ipv4.ttl > 0) {
+    if(valid(ipv4)) {
         apply(ipv4_lpm);
     }
 
