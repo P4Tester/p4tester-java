@@ -11,20 +11,22 @@ import static java.lang.System.exit;
 
 public class P4TesterProbeProcessor  {
 
-    private String devName;
 
     private ArrayList<NetworkProbeSet> networkProbeSets;
     static final int PACKET_COUNT = 1000;
+    private Pcap pcap;
 
 
     P4TesterProbeProcessor(ArrayList<NetworkProbeSet> networkProbeSets) {
 
-        ArrayList<PcapIf> devs = new ArrayList<>();
+        int snaplen = 64 * 1024;           // Capture all packets, no trucation
+        int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
+        int timeout = 10 * 1000;           // 10 seconds in millis
         StringBuilder errbuf = new StringBuilder();
-        int r = Pcap.findAllDevs(devs, errbuf);
-        //System.out.println("Open the device: " + this.nif.getName());
-        if (r == Pcap.NOT_OK || devs.isEmpty()) {
-            System.out.println("Error");
+        this.pcap =
+                Pcap.openLive("heth", snaplen, flags, timeout, errbuf);
+        if (pcap == null) {
+            System.out.println("Cannot open heth!");
         }
 
         this.networkProbeSets = networkProbeSets;
@@ -63,7 +65,12 @@ public class P4TesterProbeProcessor  {
             data[i] = 1;
         }
         for (int i =0 ; i< 100; i++) {
-
+            this.pcap.sendPacket(data);
+            try {
+                Thread.currentThread().sleep(1000);
+            } catch (Exception e) {
+                exit(1);
+            }
         }
         //for (byte[] probe:networkProbeSet.generateProbes()) {
                     // try {
