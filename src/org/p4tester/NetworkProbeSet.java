@@ -21,6 +21,9 @@ public class NetworkProbeSet extends ProbeSet {
     private int update;
     private P4Tester tester;
     private ArrayList<byte[]> probes;
+    private ArrayList<Short> properties;
+    private ArrayList<String> routerPath;
+    private int dstIp;
 
     NetworkProbeSet(P4TesterBDD bdd, P4Tester p4Tester) {
         super(-1);
@@ -33,6 +36,9 @@ public class NetworkProbeSet extends ProbeSet {
         this.update = 0;
         this.recordRouterMap = new HashMap<>();
         this.probes = new ArrayList<>();
+        this.properties = new ArrayList<>();
+        routerPath = new ArrayList<>();
+        this.dstIp = -1;
     }
 
     @Override
@@ -40,6 +46,9 @@ public class NetworkProbeSet extends ProbeSet {
         return match;
     }
 
+    public int getDstIp() {
+        return dstIp;
+    }
 
     public void addSwitchProbeSet(SwitchProbeSet switchProbeSet) {
         this.switchProbeSets.add(switchProbeSet);
@@ -127,7 +136,7 @@ public class NetworkProbeSet extends ProbeSet {
 
             int[] ipBytes = this.bdd.oneSATArray(this.match);
 
-            int dstIp = 0;
+            dstIp = 0;
             for (int b:ipBytes) {
                 dstIp <<= 1;
                 dstIp += b;
@@ -176,7 +185,6 @@ public class NetworkProbeSet extends ProbeSet {
 
                 for (short p:portList) {
                     srs.add((short)(p<<8));
-
                 }
 
                 for (int j = start; j < end; j++) {
@@ -185,6 +193,14 @@ public class NetworkProbeSet extends ProbeSet {
                         int k = recordRouterMap.get(path.get(j).getRouter().getName());
                         if (k == j) {
                             srs.add((short)((p<<8)|1));
+                            for (SwitchProbeSet probeSet:switchProbeSets) {
+                                if (probeSet.getRouter().equals(path.get(j).getRouter())) {
+                                    properties.add(Short.valueOf(probeSet.getRouterRule().getPort()));
+                                    break;
+                                }
+                            }
+
+                            routerPath.add(path.get(j).getRouter().getName());
                         } else {
                             srs.add((short)(p<<8));
                         }
@@ -210,7 +226,7 @@ public class NetworkProbeSet extends ProbeSet {
 
 
 
-                byte[] probe = new byte[header.length + srs.size()*2 + 20]; // For test results
+                byte[] probe = new byte[header.length + srs.size()*2]; // For test results
                 ByteBuffer byteBuffer = ByteBuffer.wrap(probe);
 
                 byteBuffer.put(header);
@@ -228,6 +244,17 @@ public class NetworkProbeSet extends ProbeSet {
 
 
         return probes;
+    }
+
+    public ArrayList<String> check(byte[] data) {
+        ArrayList<String> faults = new ArrayList<>();
+        ByteBuffer byteBuffer = ByteBuffer.wrap(data);
+        for (int i = properties.size() - 1; i > 0; i++) {
+            if (byteBuffer.getShort() != properties.get(i)) {
+                faults.add(routerPath.get(i));
+            }
+        }
+        return faults;
     }
 
     public ArrayList<Integer> getPaths() {

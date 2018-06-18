@@ -180,7 +180,9 @@ table forward {
     }
 }
 control p4tester {
-    apply(record);
+    if (sr[0].f == 1) {
+        apply(record);
+    }
     apply(forward);
 }
 

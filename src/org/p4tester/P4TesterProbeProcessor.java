@@ -2,18 +2,24 @@ package org.p4tester;
 
 
 import org.jnetpcap.Pcap;
-import org.jnetpcap.PcapIf;
+import org.jnetpcap.packet.PcapPacket;
+import org.jnetpcap.packet.PcapPacketHandler;
 import org.p4tester.packet.Ethernet;
+import org.p4tester.packet.IPv4;
+import org.p4tester.packet.UDP;
+import org.projectfloodlight.openflow.types.EthType;
+import org.projectfloodlight.openflow.types.IpProtocol;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static java.lang.System.exit;
 
-public class P4TesterProbeProcessor  {
+public class P4TesterProbeProcessor  implements PcapPacketHandler {
 
 
     private ArrayList<NetworkProbeSet> networkProbeSets;
-    static final int PACKET_COUNT = 1000;
+    private HashMap<Integer, NetworkProbeSet> probeSetHashMap;
     private Pcap pcap;
 
 
@@ -31,10 +37,11 @@ public class P4TesterProbeProcessor  {
         }
 
         this.networkProbeSets = networkProbeSets;
+        this.probeSetHashMap =new HashMap<>();
     }
 
     public void loop() {
-
+        this.pcap.loop(1000000000, this, "P4Tester");
     }
 
     public void setNetworkProbeSets(ArrayList<NetworkProbeSet> networkProbeSets) {
@@ -45,8 +52,13 @@ public class P4TesterProbeProcessor  {
         if (networkProbeSets != null) {
             for (NetworkProbeSet networkProbeSet:networkProbeSets) {
                 //System.out.println("NetworkProbeSet :" + networkProbeSet.getRouters().size() + "  " + networkProbeSet.getPaths().size());
+
+                if (this.probeSetHashMap.containsKey(networkProbeSet.getMatch())) {
+                    probeSetHashMap.put(networkProbeSet.getMatch(), networkProbeSet);
+                }
+
                 for (byte[] probe:networkProbeSet.generateProbes()) {
-                    System.out.println("Probe Size:" + probe.length);
+                    // System.out.println("Probe Size:" + probe.length);
                     this.pcap.sendPacket(probe);
                     // try {
                     //     this.handle.sendPacket(ethernet.serialize());
@@ -61,5 +73,30 @@ public class P4TesterProbeProcessor  {
     }
 
 
+    @Override
+    public void nextPacket(PcapPacket pcapPacket, Object o) {
+        byte[] packet = pcapPacket.getByteArray(0, 1500);
+        Ethernet eth = new Ethernet();
+        eth.deserialize(packet, 0, packet.length);
 
+        if (eth.getEtherType() == EthType.IPv4) {
+            IPv4 ipv4 = (IPv4) eth.getPayload();
+            int dstIp = ipv4.getDestinationAddress();
+            if (ipv4.getProtocol() == IpProtocol.UDP) {
+                UDP udp = (UDP) ipv4.getPayload();
+                if (udp.getSourcePort() == 11) {
+                    NetworkProbeSet networkProbeSet = this.probeSetHashMap.get(dstIp);
+                    if (networkProbeSet != null) {
+                        ArrayList<String> routers = networkProbeSet.check(udp.getPayload().serialize());
+                        for (String string:routers) {
+                            System.out.println(string + " " + dstIp);
+                        }
+                    } else {
+                        System.out.println("Cannot find a network probe set for the dst : " + dstIp);
+                    }
+                }
+            }
+        }
+
+    }
 }

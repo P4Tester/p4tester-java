@@ -41,10 +41,7 @@ public class Ethernet extends BasePacket {
 
     static {
         etherTypeClassMap = new HashMap<Short, Class<? extends IPacket>>();
-        etherTypeClassMap.put(TYPE_ARP, ARP.class);
-        etherTypeClassMap.put(TYPE_RARP, ARP.class);
         etherTypeClassMap.put(TYPE_IPv4, IPv4.class);
-        etherTypeClassMap.put(TYPE_IPv6, IPv6.class);
     }
 
     protected byte[] destinationMACAddress;

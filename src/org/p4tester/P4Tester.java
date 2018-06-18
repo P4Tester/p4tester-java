@@ -5,9 +5,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 
 class SwitchPortPair {
@@ -475,13 +473,20 @@ public class P4Tester {
 
         if (inject) {
             P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
-            ScheduledExecutorService executor = Executors.newScheduledThreadPool(2);
+            ExecutorService executor = Executors.newFixedThreadPool(2);
 
-            Runnable runnable = new Runnable() {
+            Runnable injectTask = new Runnable() {
                 @Override
                 public void run() {
                     // System.out.println(probeSets.size());
-                    probeProcessor.injectProbes();
+                    try {
+                        while (true) {
+                            Thread.sleep(2000);
+                            probeProcessor.injectProbes();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     // for (NetworkProbeSet networkProbeSet:probeSets) {
                     //    networkProbeSet.generateProbes();
                     //}
@@ -497,7 +502,16 @@ public class P4Tester {
 
                 }
             };
-            executor.scheduleAtFixedRate(runnable, 1, 3, TimeUnit.SECONDS);
+
+            Runnable collectTask = new Runnable() {
+                @Override
+                public void run() {
+                    probeProcessor.loop();
+                }
+            };
+
+            executor.execute(injectTask);
+            executor.execute(collectTask);
         }
 
         //
