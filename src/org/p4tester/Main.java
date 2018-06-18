@@ -14,13 +14,15 @@ public class Main {
 
         P4Tester p4tester = new P4Tester(bdd);
 
-        ArrayList<PcapIf> devs = new ArrayList<>();
+        int snaplen = 64 * 1024;           // Capture all packets, no trucation
+        int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
+        int timeout = 10 * 1000;           // 10 seconds in millis
         StringBuilder errbuf = new StringBuilder();
-        int r = Pcap.findAllDevs(devs, errbuf);
-        if (r == Pcap.NOT_OK || devs.isEmpty()) {
-            System.out.println("Error");
+        Pcap pcap =
+                Pcap.openLive("eth1", snaplen, flags, timeout, errbuf);
+        if (pcap == null) {
+            
         }
-
 
         if (args.length == 0) {
 //            p4tester.startInternet2(false, false);
