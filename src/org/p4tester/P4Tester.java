@@ -45,7 +45,7 @@ public class P4Tester {
     private Router root;
     private ArrayList<SwitchPortPair> path;
     private static final String[] INTERNET2_ROUTERS = {
-            "chic"/*,
+            "chic",
             "atla",
             "hous",
             "kans",
@@ -53,26 +53,26 @@ public class P4Tester {
             "newy32aoa" ,
             "salt",
             "wash" ,
-            "seat" */
+            "seat"
     };
 
     private static final String[] STANFORD_ROUTERS = {
             "bbra",
-            "bbrb",
+            //"bbrb",
             "boza",
-            "bozb",
+            //"bozb",
             "coza",
-            "cozb",
+            //"cozb",
             "goza",
-            "gozb",
+            //"gozb",
             "poza",
-            "pozb",
+            //"pozb",
             "roza",
-            "rozb",
+            //"rozb",
             "soza",
-            "sozb",
+            //"sozb",
             "yoza",
-            "yozb"
+            //"yozb"
     };
 
     private static final String[] UNVv6_ROUTERS = {
@@ -545,15 +545,21 @@ public class P4Tester {
         */
     }
 
-
-
-
     public ArrayList<Short> getForwardPortList(String name) {
-        return new ArrayList<>();
+        ArrayList<Short> arrayList = new ArrayList<>();
+        for (int i= 1; i < this.STANFORD_ROUTERS.length; i++) {
+            if (this.STANFORD_ROUTERS[i].equals(name)) {
+                arrayList.add((short) i);
+                break;
+            }
+        }
+        return arrayList;
     }
 
     public ArrayList<Short> getBackwordPortList(String name) {
-        return new ArrayList<>();
+        ArrayList<Short> arrayList = new ArrayList<>();
+        arrayList.add((short) 0);
+        return arrayList;
     }
 
     @Deprecated
@@ -599,7 +605,6 @@ public class P4Tester {
                             }
                         }
                     }
-
                     this.probeSets.add(networkProbeSet);
                 }
             }
@@ -644,8 +649,40 @@ public class P4Tester {
         this.root = this.routers.get(0);
     }
 
-
     private void buildStanfordST() {
+        ArrayList<Router> children = new ArrayList<>();
+        children.add(this.routers.get(1));
+        children.add(this.routers.get(2));
+        children.add(this.routers.get(3));
+        children.add(this.routers.get(4));
+        children.add(this.routers.get(5));
+        children.add(this.routers.get(6));
+        children.add(this.routers.get(7));
+
+        this.topoMap.put(STANFORD_ROUTERS[0], children);
+
+        this.routers.get(0).addNeighbor(this.routers.get(1).getName(), (short) 1);
+        this.routers.get(0).addNeighbor(this.routers.get(2).getName(), (short) 2);
+        this.routers.get(0).addNeighbor(this.routers.get(3).getName(), (short) 3);
+        this.routers.get(0).addNeighbor(this.routers.get(4).getName(), (short) 4);
+        this.routers.get(0).addNeighbor(this.routers.get(5).getName(), (short) 5);
+        this.routers.get(0).addNeighbor(this.routers.get(6).getName(), (short) 6);
+        this.routers.get(0).addNeighbor(this.routers.get(7).getName(), (short) 7);
+
+        this.routers.get(1).addNeighbor(this.routers.get(0).getName(), (short) 0);
+        this.routers.get(2).addNeighbor(this.routers.get(0).getName(), (short) 0);
+        this.routers.get(3).addNeighbor(this.routers.get(0).getName(), (short) 0);
+        this.routers.get(4).addNeighbor(this.routers.get(0).getName(), (short) 0);
+        this.routers.get(5).addNeighbor(this.routers.get(0).getName(), (short) 0);
+        this.routers.get(6).addNeighbor(this.routers.get(0).getName(), (short) 0);
+        this.routers.get(7).addNeighbor(this.routers.get(0).getName(), (short) 0);
+
+
+        this.root = this.routers.get(0);
+    }
+
+
+    private void _buildStanfordST() {
         ArrayList<Router> children = new ArrayList<>();
         children.add(this.routers.get(1));
         children.add(this.routers.get(2));
@@ -774,7 +811,7 @@ public class P4Tester {
     public void stanfordProbeConstruct() {
         ArrayList<Thread> constructors = new ArrayList<>();
         for (String s: STANFORD_ROUTERS) {
-            String fileName = "resource/Stanford_backbone/" + s + "_rtr.txt";
+            String fileName = "resource/Stanford_backbone/" + s + ".txt";
             // Thread t = new Thread(new P4TesterProbeSetConstructor(this, s, fileName));
             //t.run();
             this.parseCompressedStanford(s, fileName);

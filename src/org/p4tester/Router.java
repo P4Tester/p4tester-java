@@ -99,6 +99,7 @@ public class Router {
         // this.complementTree = new BDDTree(bdd, rootNode, null);
 
         ruleHashMap = new HashMap<>();
+        neighbors = new HashMap<>();
     }
 
 
@@ -583,7 +584,13 @@ public class Router {
         // this.bdd.print(this.rules.get(0));
     }
 
+    HashMap<String, Short> neighbors;
+
+    public void addNeighbor(String name, short port) {
+        neighbors.put(name, port);
+    }
+
     public short getPort(String name) {
-        return 1;
+        return neighbors.get(name);
     }
 }
