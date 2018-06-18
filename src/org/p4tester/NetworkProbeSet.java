@@ -144,12 +144,13 @@ public class NetworkProbeSet extends ProbeSet {
 
             IPv4 ip = new IPv4();
             ip.setProtocol(IpProtocol.UDP)
-                    .setDestinationAddress(dstIp);
+                    .setDestinationAddress(dstIp)
+                    .setSourceAddress(dstIp);
 
 
 
             UDP udp = new UDP();
-            udp.setDestinationPort((short) 11);
+            udp.setDestinationPort((short) 11).setSourcePort((short) 11);
 
             ip.setPayload(udp);
             ethernet.setPayload(ip);
