@@ -27,6 +27,7 @@ public class P4TesterProbeProcessor  {
                 Pcap.openLive("heth", snaplen, flags, timeout, errbuf);
         if (pcap == null) {
             System.out.println("Cannot open heth!");
+            exit(1);
         }
 
         this.networkProbeSets = networkProbeSets;
@@ -46,6 +47,7 @@ public class P4TesterProbeProcessor  {
                 //System.out.println("NetworkProbeSet :" + networkProbeSet.getRouters().size() + "  " + networkProbeSet.getPaths().size());
                 for (byte[] probe:networkProbeSet.generateProbes()) {
                     System.out.println("Probe Size:" + probe.length);
+                    this.pcap.sendPacket(probe);
                     // try {
                     //     this.handle.sendPacket(ethernet.serialize());
                     //} catch (NotOpenException e) {
@@ -58,30 +60,6 @@ public class P4TesterProbeProcessor  {
         }
     }
 
-    public void sendProbes() {
-                //System.out.println("NetworkProbeSet :" + networkProbeSet.getRouters().size() + "  " + networkProbeSet.getPaths().size());
-        byte[] data = new byte [128];
-        for (int i = 0 ;  i < data.length; i++ ) {
-            data[i] = 1;
-        }
-        for (int i =0 ; i< 100; i++) {
-            this.pcap.sendPacket(data);
-            try {
-                Thread.currentThread().sleep(1000);
-            } catch (Exception e) {
-                exit(1);
-            }
-        }
-        //for (byte[] probe:networkProbeSet.generateProbes()) {
-                    // try {
-                    //     this.handle.sendPacket(ethernet.serialize());
-                    //} catch (NotOpenException e) {
-                    //    e.printStackTrace();
-                    //} catch (PcapNativeException e) {
-                    //    e.printStackTrace();
-                    //}
-        //}
-    }
 
 
 }

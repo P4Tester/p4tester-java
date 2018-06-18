@@ -3,6 +3,8 @@ import os
 
 def create_link(peer1, peer2):
     os.popen("ip link add %s type veth peer name %s"%(peer1, peer2))
+    os.popen("ifconfig %s promisc up"%peer1)
+    os.popen("ifconfig %s promisc up"%peer2)
 
 def main():
     create_link('heth', 's0_0')
@@ -13,6 +15,7 @@ def main():
     create_link('s0_5', 's5_0')
     create_link('s0_6', 's6_0')
     create_link('s0_7', 's7_0')
+    os.popen("ifconfig heth down")
 
 if __name__ == "__main__":
     main()
