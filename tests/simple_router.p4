@@ -62,7 +62,7 @@ header sr_t sr[40];
 header_type test_record_t {
 
 	fields {
-        	port : 8;
+        	port : 16;
         }
 }
 
@@ -116,14 +116,31 @@ calculated_field ipv4.hdrChecksum  {
 parser parse_ipv4 {
     extract(ipv4);
     return select(ipv4.protocol) {
-        ETHERTYPE_IPV4 : parse_ipv4;
+        17 : parse_udp;
         default: ingress;
     }
 }
 
-parser parse_udp() {
+parser parse_udp {
 	extract(udp);
-	switch(udp.dstPort) 
+	return select(udp.dstPort) {
+        11 : parse_sr;
+        default: ingress;
+    }
+}
+
+parser parse_test_record {
+    extract(test_record[0]);
+    return ingress;
+}
+
+parser parse_sr {
+	extract(sr[next]);
+	return select(latest.s) {
+        0 : parse_sr;
+        1 : parse_test_record;
+        default : ingress;
+    } 
 }
 
 action _drop() {
@@ -155,9 +172,38 @@ table ipv4_lpm {
     size: 1024;
 }
 
+action record_test() {
+    push(test_record, 1);
+    modify(test_record[0].port, standard_metadata.egress_spec);
+}
+
+table record {
+    actions {
+        record_test;
+    }
+}
+
+action p4tester_forward() {
+    modify(standard_metadata.egress_spec, sr[0].port);
+    remove_header(sr[0]);
+}
+table forward {
+    actions {
+        p4tester_forward;
+    }
+}
+control p4tester {
+    apply(record);
+    apply(forward);
+}
+
 control ingress {
     if(valid(ipv4) and ipv4.ttl > 0) {
         apply(ipv4_lpm);
+    }
+
+    if (valid(sr[0])) {
+        p4tester();
     }
 }
 
