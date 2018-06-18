@@ -171,7 +171,7 @@ public class NetworkProbeSet extends ProbeSet {
 
 
                 for (short p:portList) {
-                    srs.add((short)(p<<1));
+                    srs.add((short)(p<<8));
 
                 }
 
@@ -180,12 +180,12 @@ public class NetworkProbeSet extends ProbeSet {
                     if (recordRouterMap.keySet().contains(path.get(j).getRouter().getName())) {
                         int k = recordRouterMap.get(path.get(j).getRouter().getName());
                         if (k == j) {
-                            srs.add((short)((p<<1)|1));
+                            srs.add((short)((p<<8)|1));
                         } else {
-                            srs.add((short)(p<<1));
+                            srs.add((short)(p<<8));
                         }
                     } else {
-                        srs.add((short)(p<<1));
+                        srs.add((short)(p<<8));
                     }
                 }
 
@@ -197,8 +197,10 @@ public class NetworkProbeSet extends ProbeSet {
                 portList = tester.getBackwordPortList(endPair.getRouter().getName());
 
                 for (short p:portList) {
-                    srs.add((short)(p<<1));
+                    srs.add((short)(p<<8));
                 }
+                int x = srs.size() - 1;
+                srs.set(x, (short)(srs.get(x) | 2));
 
 
                 byte[] header = ethernet.serialize();
