@@ -1,57 +1,37 @@
 package org.p4tester;
 
 
+import org.jnetpcap.Pcap;
+import org.jnetpcap.PcapIf;
 import org.p4tester.packet.Ethernet;
-import org.pcap4j.core.*;
-import org.pcap4j.packet.Packet;
-import org.pcap4j.util.MacAddress;
-import org.pcap4j.util.NifSelector;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
-public class P4TesterProbeProcessor implements PacketListener {
-    private PcapNetworkInterface nif;
+import static java.lang.System.exit;
+
+public class P4TesterProbeProcessor  {
+
     private String devName;
-    private PcapHandle handle;
+
     private ArrayList<NetworkProbeSet> networkProbeSets;
     static final int PACKET_COUNT = 1000;
 
 
     P4TesterProbeProcessor(ArrayList<NetworkProbeSet> networkProbeSets) {
-        /*
-        try {
-            this.nif = new NifSelector().selectNetworkInterface();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        */
 
-        //if (nif == null) {
-        //    return;
-        //}
+        ArrayList<PcapIf> devs = new ArrayList<>();
+        StringBuilder errbuf = new StringBuilder();
+        int r = Pcap.findAllDevs(devs, errbuf);
         //System.out.println("Open the device: " + this.nif.getName());
-        /*
-        try {
-            this.handle = nif.openLive(65536, PcapNetworkInterface.PromiscuousMode.PROMISCUOUS, 10);
-
-        } catch (PcapNativeException e) {
-            e.printStackTrace();
+        if (r == Pcap.NOT_OK || devs.isEmpty()) {
+            System.out.println("Error");
         }
-        */
+
         this.networkProbeSets = networkProbeSets;
     }
 
     public void loop() {
-        try {
-            this.handle.loop(PACKET_COUNT, this);
-        } catch (PcapNativeException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (NotOpenException e) {
-            e.printStackTrace();
-        }
+
     }
 
     public void setNetworkProbeSets(ArrayList<NetworkProbeSet> networkProbeSets) {
@@ -76,10 +56,25 @@ public class P4TesterProbeProcessor implements PacketListener {
         }
     }
 
-    @Override
-    public void gotPacket(Packet packet) {
-        Ethernet ethernet = new Ethernet();
-        ethernet.deserialize(packet.getRawData(), 0, packet.length());
+    public void sendProbes() {
+                //System.out.println("NetworkProbeSet :" + networkProbeSet.getRouters().size() + "  " + networkProbeSet.getPaths().size());
+        byte[] data = new byte [128];
+        for (int i = 0 ;  i < data.length; i++ ) {
+            data[i] = 1;
+        }
+        for (int i =0 ; i< 100; i++) {
+
+        }
+        //for (byte[] probe:networkProbeSet.generateProbes()) {
+                    // try {
+                    //     this.handle.sendPacket(ethernet.serialize());
+                    //} catch (NotOpenException e) {
+                    //    e.printStackTrace();
+                    //} catch (PcapNativeException e) {
+                    //    e.printStackTrace();
+                    //}
+        //}
     }
+
 
 }

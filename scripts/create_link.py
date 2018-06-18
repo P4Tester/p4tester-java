@@ -1,4 +1,6 @@
 #! /bin/python
+import os 
+
 def create_link(peer1, peer2):
     os.popen("ip link add %s type veth peer name %s"%(peer1, peer2))
 
