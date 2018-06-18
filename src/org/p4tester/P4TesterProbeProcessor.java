@@ -72,13 +72,12 @@ public class P4TesterProbeProcessor  implements PcapPacketHandler {
         }
     }
 
-
     @Override
     public void nextPacket(PcapPacket pcapPacket, Object o) {
         byte[] packet = pcapPacket.getByteArray(0, 1500);
         Ethernet eth = new Ethernet();
         eth.deserialize(packet, 0, packet.length);
-
+        System.out.println("Received Packet!");
         if (eth.getEtherType() == EthType.IPv4) {
             IPv4 ipv4 = (IPv4) eth.getPayload();
             int dstIp = ipv4.getDestinationAddress();
