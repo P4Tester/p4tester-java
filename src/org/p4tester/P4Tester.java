@@ -485,6 +485,16 @@ public class P4Tester {
                     // for (NetworkProbeSet networkProbeSet:probeSets) {
                     //    networkProbeSet.generateProbes();
                     //}
+                   /*
+                    ArrayList<byte[]> x = probeSets.get(300).generateProbes();
+                    //for (int i = 42; i < x.get(0).length ; i+=2) {
+                        System.out.print(" " + x.get(0)[i]);
+                    }
+                    System.out.println();
+                    for (Router router1:probeSets.get(2).getRouters()) {
+                        System.out.println(router1.getName());
+                    }*/
+
                 }
             };
             executor.scheduleAtFixedRate(runnable, 1, 3, TimeUnit.SECONDS);
@@ -562,6 +572,9 @@ public class P4Tester {
     public ArrayList<Short> getBackwordPortList(String name) {
         ArrayList<Short> arrayList = new ArrayList<>();
         arrayList.add((short) 0);
+        if (!root.getName().equals(name)) {
+            arrayList.add((short) 0);
+        }
         return arrayList;
     }
 
@@ -751,9 +764,9 @@ public class P4Tester {
 
         if (this.topoMap.containsKey(router.getName())) {
             for (Router child: this.topoMap.get(router.getName())) {
-                path.add(new SwitchPortPair(child, router.getPort(child.getName())));
+                path.add(new SwitchPortPair(router, router.getPort(child.getName())));
                 traverseST(child);
-                path.add(new SwitchPortPair(router, child.getPort(router.getName())));
+                path.add(new SwitchPortPair(child, child.getPort(router.getName())));
             }
         }
     }

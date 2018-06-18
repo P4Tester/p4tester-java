@@ -170,6 +170,10 @@ public class NetworkProbeSet extends ProbeSet {
                 ArrayList<Short> srs =  new ArrayList<>();
 
 
+                //if (startPair.getRouter().getName().equals("bbra")) {
+
+                //}
+
                 for (short p:portList) {
                     srs.add((short)(p<<8));
 
@@ -195,7 +199,6 @@ public class NetworkProbeSet extends ProbeSet {
                 }
 
                 portList = tester.getBackwordPortList(endPair.getRouter().getName());
-
                 for (short p:portList) {
                     srs.add((short)(p<<8));
                 }
