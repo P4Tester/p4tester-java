@@ -140,45 +140,67 @@ public class Router {
         int prefix = Integer.valueOf(ipv4[1]);
 
         ArrayList<Integer> bits = new ArrayList<>();
-
+       // bits.add(0);
+        // System.out.println(str);
         for (String i:ip) {
             int value = Integer.valueOf(i);
             for (int j = 0; j < 8; j++) {
-                bits.add(value / (1 << (7 - j)));
+                int bit = value / (1 << (7 - j));
+                bits.add( value / (1 << (7 - j)));
                 value = value % (1 << (7 - j));
+                //System.out.print(bit + "");
+            }
+            //System.out.print( "|");
+        }
+       //System.out.println();
+
+        int rule = this.bdd.getTrue();
+        for (int i = 0; i < 32; i++) {
+            if (bits.get(i) == 1) {
+                int var = rule;
+                rule = this.bdd.and(rule, this.bdd.getVar(i));
+                this.bdd.deref(var);
+            } else if (bits.get(i) == 0) {
+                int var = rule;
+                rule = this.bdd.and(rule, this.bdd.getNotVar(i));
+                this.bdd.deref(var);
             }
         }
 
-        int rule;
-        if (prefix > 0) {
-            rule = this.bdd.getVar(0);
-
-            if (bits.get(0) == 0) {
-                rule = this.bdd.getNotVar(0);
+        int mask = this.bdd.getTrue();
+        for (int i = 0; i <= prefix; i++) {
+            if (bits.get(i) == 1) {
+                int var = rule;
+                mask = this.bdd.and(mask, this.bdd.getVar(i));
+                this.bdd.deref(var);
+            } else if (bits.get(i) == 0) {
+                int var = rule;
+                mask = this.bdd.and(mask, this.bdd.getNotVar(i));
+                this.bdd.deref(var);
             }
-
-            for (int i = 1; i < 32; i++) {
-                if (i < prefix) {
-                    if (bits.get(i) == 1) {
-                        int var = rule;
-                        rule = this.bdd.and(rule, this.bdd.getVar(i));
-                        this.bdd.deref(var);
-                    } else {
-                        int var = rule;
-                        rule = this.bdd.and(rule, this.bdd.getNotVar(i));
-                        this.bdd.deref(var);
-                    }
-                } else {
-                    int var = this.bdd.or(this.bdd.getVar(i), this.bdd.getNotVar(i));
-                    rule = this.bdd.and(rule, var);
-                    this.bdd.deref(var);
-                }
-            }
-        } else {
-            rule = this.bdd.getTrue();
         }
- //       System.out.println(str);
-   //     this.bdd.print(rule);
+
+        for (int i= prefix; i <32 ; i++) {
+            mask = this.bdd.and(mask, this.bdd.getNotVar(i));
+        }
+        rule = this.bdd.or(rule, mask);
+
+        /*
+        {
+            int[] ipBytes = this.bdd.oneSATArray(rule);
+
+            long dstIp = 0;
+            for (int b:ipBytes) {
+                dstIp <<= 1;
+                dstIp += b;
+            }
+            if (dstIp < 0) {
+                dstIp = -dstIp;
+            }
+            System.out.println("" + (dstIp>> 24) + "." +((dstIp>> 16) &0xFF) + "." + ((dstIp>> 8) &0xFF) + "." + ((dstIp) &0xFF) );
+        }
+        */
+
         RouterRule routerRule = new RouterRule(str, rule, prefix, port, nextHop);
         this.rules.add(routerRule);
         this.ruleHashMap.put(str, routerRule);
@@ -237,10 +259,9 @@ public class Router {
             int rh = tmp_rules[i];
             // this.bdd.print(this.bdd.oneSAT(rh));
 //            Ha = bdd.subtract(Ha, rh);
+            int Hb = r;
             if (this.bdd.oneSAT(rh) != 0) {
-                int Hb = rh;
                 if (this.enablePriorityChecking) {
-
                     for (int j = prefixMap[rule_i.getPrefix() - 1]; j < ruleIds.length; j++) {
                         RouterRule rule_j = rules.get(ruleIds[j]);
                         int override = this.bdd.and(Hb, tmp_rules[j]);
@@ -250,7 +271,7 @@ public class Router {
                                 SwitchProbeSet switchProbeSet = new SwitchProbeSet(rule_i, override, this, rule_j.getPrefix());
                                 rule_i.addSwitchProbeSet(switchProbeSet);
                                 switchProbeSets.add(switchProbeSet);
-                                System.out.println("1");
+                                // System.out.println("1");
                             } else {
 
                             }
@@ -259,7 +280,7 @@ public class Router {
                     }
                 }
                 if (this.bdd.oneSAT(Hb) != 0) {
-                    SwitchProbeSet switchProbeSet = new SwitchProbeSet(rule_i, Hb, this, 0);
+                    SwitchProbeSet switchProbeSet = new SwitchProbeSet(rule_i, rule_i.getMatchBdd(), this, 0);
                     rule_i.addSwitchProbeSet(switchProbeSet);
                     switchProbeSets.add(switchProbeSet);
                 }

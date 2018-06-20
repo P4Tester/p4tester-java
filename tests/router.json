@@ -178,6 +178,10 @@
                 [
                     "port",
                     16
+                ],
+                [
+                    "id",
+                    16
                 ]
             ],
             "length_exp": null,
@@ -646,7 +650,7 @@
                     "transitions": [
                         {
                             "type": "hexstr",
-                            "value": "0x000b",
+                            "value": "0x2b67",
                             "mask": null,
                             "next_state": "parse_sr"
                         },
@@ -796,8 +800,66 @@
             ]
         },
         {
-            "name": "set_nhop",
+            "name": "p4tester_forward",
             "id": 1,
+            "runtime_data": [],
+            "primitives": [
+                {
+                    "op": "modify_field",
+                    "parameters": [
+                        {
+                            "type": "field",
+                            "value": [
+                                "standard_metadata",
+                                "egress_spec"
+                            ]
+                        },
+                        {
+                            "type": "field",
+                            "value": [
+                                "sr[0]",
+                                "port"
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "op": "subtract",
+                    "parameters": [
+                        {
+                            "type": "field",
+                            "value": [
+                                "udp",
+                                "len"
+                            ]
+                        },
+                        {
+                            "type": "field",
+                            "value": [
+                                "udp",
+                                "len"
+                            ]
+                        },
+                        {
+                            "type": "hexstr",
+                            "value": "0x2"
+                        }
+                    ]
+                },
+                {
+                    "op": "remove_header",
+                    "parameters": [
+                        {
+                            "type": "header",
+                            "value": "sr[0]"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "set_nhop",
+            "id": 2,
             "runtime_data": [
                 {
                     "name": "nhop_ipv4",
@@ -876,44 +938,14 @@
             ]
         },
         {
-            "name": "p4tester_forward",
-            "id": 2,
-            "runtime_data": [],
-            "primitives": [
-                {
-                    "op": "modify_field",
-                    "parameters": [
-                        {
-                            "type": "field",
-                            "value": [
-                                "standard_metadata",
-                                "egress_spec"
-                            ]
-                        },
-                        {
-                            "type": "field",
-                            "value": [
-                                "sr[0]",
-                                "port"
-                            ]
-                        }
-                    ]
-                },
-                {
-                    "op": "remove_header",
-                    "parameters": [
-                        {
-                            "type": "header",
-                            "value": "sr[0]"
-                        }
-                    ]
-                }
-            ]
-        },
-        {
             "name": "record_test",
             "id": 3,
-            "runtime_data": [],
+            "runtime_data": [
+                {
+                    "name": "id",
+                    "bitwidth": 16
+                }
+            ],
             "primitives": [
                 {
                     "op": "add_header",
@@ -921,6 +953,29 @@
                         {
                             "type": "header",
                             "value": "test_record"
+                        }
+                    ]
+                },
+                {
+                    "op": "add",
+                    "parameters": [
+                        {
+                            "type": "field",
+                            "value": [
+                                "udp",
+                                "len"
+                            ]
+                        },
+                        {
+                            "type": "field",
+                            "value": [
+                                "udp",
+                                "len"
+                            ]
+                        },
+                        {
+                            "type": "hexstr",
+                            "value": "0x4"
                         }
                     ]
                 },
@@ -940,6 +995,22 @@
                                 "standard_metadata",
                                 "egress_spec"
                             ]
+                        }
+                    ]
+                },
+                {
+                    "op": "modify_field",
+                    "parameters": [
+                        {
+                            "type": "field",
+                            "value": [
+                                "test_record",
+                                "id"
+                            ]
+                        },
+                        {
+                            "type": "runtime_data",
+                            "value": 0
                         }
                     ]
                 }

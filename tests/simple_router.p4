@@ -50,6 +50,7 @@ header_type test_record_t {
 
 	fields {
         	port : 16;
+            id : 16;
         }
 }
 
@@ -111,7 +112,7 @@ parser parse_ipv4 {
 parser parse_udp {
 	extract(udp);
 	return select(udp.dstPort) {
-        11 : parse_sr;
+        11111 : parse_sr;
         default: ingress;
     }
 }
@@ -159,9 +160,11 @@ table ipv4_lpm {
     size: 1024;
 }
 
-action record_test() {
+action record_test(id) {
     add_header(test_record);
+    add(udp.len, udp.len, 4);
     modify_field(test_record.port, standard_metadata.egress_spec);
+    modify_field(test_record.id, id);
 }
 
 table record {
@@ -172,6 +175,7 @@ table record {
 
 action p4tester_forward() {
     modify_field(standard_metadata.egress_spec, sr[0].port);
+    subtract(udp.len, udp.len, 2);
     remove_header(sr[0]);
 }
 table forward {
@@ -180,9 +184,9 @@ table forward {
     }
 }
 control p4tester {
-    if (sr[0].f == 1) {
+    //if (sr[0].f == 1) {
         apply(record);
-    }
+    //}
     apply(forward);
 }
 

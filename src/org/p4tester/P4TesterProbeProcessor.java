@@ -12,16 +12,22 @@ import org.projectfloodlight.openflow.types.IpProtocol;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import static java.lang.System.exit;
 
-public class P4TesterProbeProcessor  implements PcapPacketHandler {
+public class P4TesterProbeProcessor {
 
 
     private ArrayList<NetworkProbeSet> networkProbeSets;
     private HashMap<Integer, NetworkProbeSet> probeSetHashMap;
     private Pcap pcap;
-
+    private int packetCount;
+    private ArrayList<Integer> matchList;
+    private long startTime;
+    private int init;
+    private HashSet<Integer> faultRules;
+    private int maxFaults;
 
     P4TesterProbeProcessor(ArrayList<NetworkProbeSet> networkProbeSets) {
 
@@ -38,10 +44,25 @@ public class P4TesterProbeProcessor  implements PcapPacketHandler {
 
         this.networkProbeSets = networkProbeSets;
         this.probeSetHashMap =new HashMap<>();
+        this.packetCount = 0;
+        this.matchList = new ArrayList<>();
+        this.init = 0;
+        this.faultRules = new HashSet<>();
+        this.maxFaults = 1;
     }
 
     public void loop() {
-        this.pcap.loop(1000000000, this, "P4Tester");
+
+        PcapPacketHandler handler = new PcapPacketHandler() {
+            @Override
+            public void nextPacket(PcapPacket pcapPacket, Object o) {
+                checkPacket(pcapPacket);
+            }
+        };
+
+
+        this.pcap.loop(-1, handler, "P4Tester");
+
     }
 
     public void setNetworkProbeSets(ArrayList<NetworkProbeSet> networkProbeSets) {
@@ -50,16 +71,24 @@ public class P4TesterProbeProcessor  implements PcapPacketHandler {
 
     public void injectProbes() {
         if (networkProbeSets != null) {
-            for (NetworkProbeSet networkProbeSet:networkProbeSets) {
+            for (int i = 0; i < networkProbeSets.size(); i++) {
                 //System.out.println("NetworkProbeSet :" + networkProbeSet.getRouters().size() + "  " + networkProbeSet.getPaths().size());
+                NetworkProbeSet networkProbeSet = networkProbeSets.get(i);
+
+
 
                 if (this.probeSetHashMap.containsKey(networkProbeSet.getMatch())) {
                     probeSetHashMap.put(networkProbeSet.getMatch(), networkProbeSet);
                 }
 
-                for (byte[] probe:networkProbeSet.generateProbes()) {
+                for (byte[] probe:networkProbeSet.generateProbes(i)) {
                     // System.out.println("Probe Size:" + probe.length);
                     this.pcap.sendPacket(probe);
+                    try {
+                        Thread.sleep(0, 100);
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
                     // try {
                     //     this.handle.sendPacket(ethernet.serialize());
                     //} catch (NotOpenException e) {
@@ -68,33 +97,62 @@ public class P4TesterProbeProcessor  implements PcapPacketHandler {
                     //    e.printStackTrace();
                     //}
                 }
+                if (matchList.size() <= i) {
+                    matchList.add(networkProbeSet.getDstIp());
+                }
             }
         }
+        if (init == 0) {
+            this.startTime = System.nanoTime();
+            init = 1;
+        }
     }
-
-    @Override
-    public void nextPacket(PcapPacket pcapPacket, Object o) {
-        byte[] packet = pcapPacket.getByteArray(0, 1500);
+    private int count = 0;
+    public void checkPacket(PcapPacket pcapPacket) {
+        byte[] packet = pcapPacket.getByteArray(0, 42);
         Ethernet eth = new Ethernet();
         eth.deserialize(packet, 0, packet.length);
-        System.out.println("Received Packet!");
-        if (eth.getEtherType() == EthType.IPv4) {
-            IPv4 ipv4 = (IPv4) eth.getPayload();
-            int dstIp = ipv4.getDestinationAddress();
-            if (ipv4.getProtocol() == IpProtocol.UDP) {
-                UDP udp = (UDP) ipv4.getPayload();
-                if (udp.getSourcePort() == 11) {
-                    NetworkProbeSet networkProbeSet = this.probeSetHashMap.get(dstIp);
-                    if (networkProbeSet != null) {
-                        ArrayList<String> routers = networkProbeSet.check(udp.getPayload().serialize());
-                        for (String string:routers) {
-                            System.out.println(string + " " + dstIp);
+        try {
+            if (eth.getEtherType() == EthType.IPv4) {
+                IPv4 ipv4 = new IPv4();
+                ipv4.deserialize(packet, 14, 42 - 14);
+                int id = ipv4.getIdentification();
+                int dstIp = ipv4.getDestinationAddress();
+                if (ipv4.getProtocol() == IpProtocol.UDP) {
+                    UDP udp = new UDP();
+                    udp.deserialize(packet, 34, 42 - 34);
+                    if (udp.getSourcePort() == 11111) {
+                        int length = udp.getLength() - 8;
+                        byte[] data = pcapPacket.getByteArray(42, length);
+                        NetworkProbeSet networkProbeSet = this.networkProbeSets.get(id);
+                        count ++;
+                        if (count % 2000 ==0) {
+                            System.out.println("Check packet!");
+                            count = 0;
                         }
-                    } else {
-                        System.out.println("Cannot find a network probe set for the dst : " + dstIp);
+                        if (networkProbeSet != null) {
+                            ArrayList<String> routers = networkProbeSet.check(data,0, length);
+                            for (String string : routers) {
+                                // System.out.println(string + " " + Integer.toHexString(dstIp) + " " + matchList.get(id));
+//                                System.out.println(string + " " + id);
+                                if (!faultRules.contains(dstIp)) {
+                                    faultRules.add(dstIp);
+                                    //if (faultRules.size() > this.maxFaults) {
+                                    System.out.println("" + faultRules.size() + "\t" + (System.nanoTime() - startTime));
+                                    //}
+                                }
+                            }
+                        } else {
+                            //System.out.println("Cannot find a network probe set for the dst : " +
+                            //        (dstIp>>24) + "."+ ((dstIp>>16)&0xFF) + "." + ((dstIp>>8) &0xFF)+ "." + (dstIp&0xFF));
+                            System.out.println("Cannot find a network probe set for the dst : " + id );
+
+                        }
                     }
                 }
             }
+        }catch (Exception e) {
+            e.printStackTrace();
         }
 
     }

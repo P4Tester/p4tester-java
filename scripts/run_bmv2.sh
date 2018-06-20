@@ -2,7 +2,9 @@
 
 SWITCH_DIR=/home/netarchlab/behavioral-model/targets/simple_switch
 
-LOG='--log-console'
+LOG='-L off'
+
+cp ../tests/router.json $SWITCH_DIR
 
 cd $SWITCH_DIR
 

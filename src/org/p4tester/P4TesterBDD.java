@@ -21,8 +21,7 @@ public class P4TesterBDD {
         this.n = n;
         bdd = new BDD(40000000, 1000000);
         for (int i = 0; i < n; i++) {
-            int var = bdd.createVar();
-            vars.add(var);
+            vars.add(bdd.createVar());
         }
         for (int i = 0 ;i < n; i++) {
             notVars.add(bdd.not(vars.get(i)));
@@ -125,7 +124,7 @@ public class P4TesterBDD {
     }
 
     public void deref(int n) {
-        this.bdd.deref(n);
+        // this.bdd.deref(n);
     }
 
 }

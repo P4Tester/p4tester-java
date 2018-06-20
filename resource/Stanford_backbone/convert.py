@@ -7,12 +7,14 @@ rtrs = ["bbra",
             "soza",
             "yoza"]
 
+i= 0
 for r in rtrs:
     f = open("%s_rtr.txt"%r, 'r')
     d = open("%s.txt"%r, 'w')
     c = open("%s_commands.txt"%r, 'w')
     c.write("table_set_default forward p4tester_forward\n")
-    c.write("table_set_default record record_test\n")
+    c.write("table_set_default record record_test %d\n"%i)
+    i += 1
     count = 0
     for l in f:
         s = l.strip().split(' ')

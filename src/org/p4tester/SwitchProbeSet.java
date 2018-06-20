@@ -41,6 +41,11 @@ public class SwitchProbeSet extends ProbeSet {
     }
 
     @Override
+    public int hashCode() {
+        return this.getMatch();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         return super.equals(obj);
     }

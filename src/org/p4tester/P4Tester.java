@@ -109,6 +109,10 @@ public class P4Tester {
 
     }
 
+    public String getStanfordRouterName(int i) {
+        return STANFORD_ROUTERS[i];
+    }
+
     public void parseInternet2(String routerName, String fileName) {
         try {
             InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(fileName));
@@ -225,7 +229,7 @@ public class P4Tester {
                     port = info[1];
                     nextHop = info[1];
 
-                    if (match != null && nextHop != null) {
+                    if (match != null && nextHop != null && !port.equals("self")) {
                         router.addIPv4withPrefix(match, port, nextHop);
                     } else {
                         // System.out.println(line);
@@ -460,20 +464,45 @@ public class P4Tester {
         int ruleId = (int) (router.getRules().size()*Math.random());
         RouterRule rule = router.getRules().get(ruleId);
         start = System.nanoTime();
-        removeRule(router.getName(), rule.getMatchIp());
+        //removeRule(router.getName(), rule.getMatchIp());
         System.out.println("Remove Rule :" + (System.nanoTime() - start));
 
         start = System.nanoTime();
         if (fast) {
-            addRuleFast(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
+           // addRuleFast(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
         } else {
-            addRule(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
+          //  addRule(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
         }
         System.out.println("Add Rule :" + (System.nanoTime() - start));
+    /*
+
+        for (int i = 0; i < this.probeSets.size(); i ++) {
+            NetworkProbeSet networkProbeSet = this.probeSets.get(i);
+            int[] ipBytes = this.bdd.oneSATArray(networkProbeSet.getMatch());
+
+            long dstIp = 0;
+            for (int b:ipBytes) {
+                dstIp <<= 1;
+                dstIp += b;
+            }
+            System.out.println("" + (dstIp>> 24) + "." +((dstIp>> 16) &0xFF) + "." + ((dstIp>> 8) &0xFF) + "." + ((dstIp) &0xFF) );
+
+            for (SwitchProbeSet switchProbeSet: networkProbeSet.getSwitchProbeSets()) {
+                System.out.println("\t" + switchProbeSet.getRouter().getName() + ":" +switchProbeSet.getRouterRule().getMatchIp() +
+                        "  " + (dstIp>> 24) + "." +((dstIp>> 16) &0xFF) + "." + ((dstIp>> 8) &0xFF) + "." + ((dstIp) &0xFF));
+                ipBytes = this.bdd.oneSATArray(switchProbeSet.getMatch());
+                dstIp = 0;
+                for (int b:ipBytes) {
+                    dstIp <<= 1;
+                    dstIp += b;
+                }
+            }
+        }
+        */
 
         if (inject) {
             P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
-            ExecutorService executor = Executors.newFixedThreadPool(2);
+            // ExecutorService executor = Executors.newFixedThreadPool(8);
 
             Runnable injectTask = new Runnable() {
                 @Override
@@ -481,8 +510,8 @@ public class P4Tester {
                     // System.out.println(probeSets.size());
                     try {
                         while (true) {
-                            Thread.sleep(2000);
                             probeProcessor.injectProbes();
+                            // Thread.sleep(1000);
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -509,9 +538,12 @@ public class P4Tester {
                     probeProcessor.loop();
                 }
             };
+            Thread thread = new Thread(injectTask);
+            thread.start();
 
-            executor.execute(injectTask);
-            executor.execute(collectTask);
+            probeProcessor.loop();
+            //executor.execute(collectTask);
+            //executor.execute(injectTask);
         }
 
         //
@@ -586,7 +618,8 @@ public class P4Tester {
     public ArrayList<Short> getBackwordPortList(String name) {
         ArrayList<Short> arrayList = new ArrayList<>();
         arrayList.add((short) 0);
-        if (!root.getName().equals(name)) {
+        if (root.getName().equals(name)) {
+            // System.out.println(name);
             arrayList.add((short) 0);
         }
         return arrayList;
@@ -624,15 +657,15 @@ public class P4Tester {
                     for (int k = 0; k < routers.size(); k++) {
                         if (k != i) {
                             BDDTreeNode treeNode = routers.get(k).getTree().query(target);
-                            if (treeNode != null) {
-                                visitedProbeSets.add(treeNode.getSwitchProbeSet());
-                                networkProbeSet.addSwitchProbeSet(treeNode.getSwitchProbeSet());
-                                target = networkProbeSet.getMatch();
-                                treeNode.setNetworkProbeSet(networkProbeSet);
-                                treeNode.getSwitchProbeSet().setNetworkProbeSet(networkProbeSet);
-                            } else {
-                                // routers.get(k).getComplementTree().insertNetworkProbeSet(networkProbeSet);
-                            }
+                                if (treeNode != null) {
+                                    if (!visitedProbeSets.contains(treeNode.getSwitchProbeSet())) {
+                                        visitedProbeSets.add(treeNode.getSwitchProbeSet());
+                                        networkProbeSet.addSwitchProbeSet(treeNode.getSwitchProbeSet());
+                                        target = networkProbeSet.getMatch();
+                                        treeNode.setNetworkProbeSet(networkProbeSet);
+                                        treeNode.getSwitchProbeSet().setNetworkProbeSet(networkProbeSet);
+                                    }
+                                }
                         }
                     }
                     this.probeSets.add(networkProbeSet);
@@ -765,6 +798,9 @@ public class P4Tester {
 
     public void generateProbes() {
         traverseST(root);
+        for (SwitchPortPair pair:this.path) {
+            System.out.println(pair.getRouter().getName() + " " + pair.getPort());
+        }
     }
 
     private void traverseST(Router router) {

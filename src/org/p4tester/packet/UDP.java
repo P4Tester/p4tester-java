@@ -111,10 +111,10 @@ public class UDP extends BasePacket {
             payloadData = payload.serialize();
         }
 
-        this.length = (short) (8 + ((payloadData == null) ? 0
-                : payloadData.length));
+        //this.length = (short) (8 + ((payloadData == null) ? 0
+        //        : payloadData.length));
 
-        byte[] data = new byte[this.length];
+        byte[] data = new byte[8];
         ByteBuffer bb = ByteBuffer.wrap(data);
 
         bb.putShort((short)this.sourcePort); // UDP packet port numbers are 16 bit
@@ -128,6 +128,7 @@ public class UDP extends BasePacket {
             ((IPv4)this.parent).setProtocol(IpProtocol.UDP);
 
         // compute checksum if needed
+        /*
         if (this.checksum == 0) {
             bb.rewind();
             int accumulation = 0;
@@ -155,8 +156,12 @@ public class UDP extends BasePacket {
                     + (accumulation & 0xffff);
             this.checksum = (short) (~accumulation & 0xffff);
             bb.putShort(6, this.checksum);
-        }
+        }*/
         return data;
+    }
+
+    public void setLength(short length) {
+        this.length = length;
     }
 
     /* (non-Javadoc)
@@ -209,21 +214,8 @@ public class UDP extends BasePacket {
         // disturbing the existing byte buffer's offsets.
 
 
-        if (UDP.decodeMap.containsKey(this.destinationPort)) {
-            try {
-                this.payload = UDP.decodeMap.get(this.destinationPort).getConstructor().newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("Failure instantiating class", e);
-            }
-        } else if (UDP.decodeMap.containsKey(this.sourcePort)) {
-            try {
-                this.payload = UDP.decodeMap.get(this.sourcePort).getConstructor().newInstance();
-            } catch (Exception e) {
-                throw new RuntimeException("Failure instantiating class", e);
-            }
-        } else {
-            this.payload = new Data();
-        }
+
+        this.payload = new Data();
         this.payload = payload.deserialize(data, bb.position(), bb.limit()-bb.position());
         this.payload.setParent(this);
         return this;
