@@ -107,7 +107,7 @@ public class NetworkProbeSet extends ProbeSet {
 
     public void addRouter(Router router) {
         if (!routers.contains(router)) {
-            router.addNetworkProbeSets(this);
+            router.addNetworkProbeSet(this);
             this.routers.add(router);
         }
     }

@@ -10,7 +10,7 @@ done
 
 for ((i=1; i<=1000; i ++))
 do
-java -jar build/p4tester.jar internet2 fast >>internet2_fast.txt
+java -jar build/p4tester.jar -data internet2 -update -fast >>internet2_fast.txt
 done
 
 cat internet2.txt|grep Step1 >internet2_step1.txt

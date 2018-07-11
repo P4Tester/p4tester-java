@@ -3,3 +3,4 @@ p4tester-java.iml
 out/
 build/
 resource/Tsinghua_route/
+*.txt

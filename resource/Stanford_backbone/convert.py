@@ -5,7 +5,15 @@ rtrs = ["bbra",
             "poza",
             "roza",
             "soza",
-            "yoza"]
+            "yoza",
+            "bbrb",
+                            "bozb",
+                               "cozb",
+                               "gozb",
+                               "pozb",
+                               "rozb",
+                               "sozb",
+                               "yozb"]
 
 i= 0
 for r in rtrs:

@@ -3,9 +3,8 @@ package org.p4tester;
 import java.util.ArrayList;
 
 public class IPv6Router extends Router {
-    IPv6Router(P4TesterBDD bdd, String name) {
-        super(bdd, name);
-        this.MAX_RULES = 2;
+    IPv6Router(P4TesterBDD bdd, String name, int maxRules, boolean enablePriority) {
+        super(bdd, name, maxRules, enablePriority);
     }
 
 

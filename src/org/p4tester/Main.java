@@ -1,37 +1,88 @@
 package org.p4tester;
 
+import org.kohsuke.args4j.CmdLineException;
+import org.kohsuke.args4j.CmdLineParser;
+import org.kohsuke.args4j.Option;
 
-import org.jnetpcap.Pcap;
-import org.jnetpcap.PcapIf;
 
-import java.util.ArrayList;
+
+class CmdOption {
+
+    @Option(name="-data", usage="Specify the name of data set")
+    String dataSet = "default";
+
+    @Option(name="-max", usage="Specify the max number of rules")
+    int maxRules = 20000;
+
+    @Option(name="-update", usage="Enable rule update")
+    boolean update = false;
+
+    @Option(name="-fast", usage="Enable fast update")
+    boolean fast = false;
+
+    @Option(name="-inject", usage="Inject probes")
+    boolean inject = false;
+
+    @Option(name="-print", usage="Print with format")
+    boolean print = false;
+
+    @Option(name="-priority", usage="Enable priority")
+    boolean priority = false;
+
+    @Option(name="-routers", usage="The max number of routers")
+    int maxRouters = 1000;
+}
+
 
 public class Main {
+    private static int UPDATE_FLAG;
+    private static int PRINT_FLAG;
+    private static boolean INJECT_FLAG;
 
     public static void main(String[] args) {
         P4TesterBDD bdd = new P4TesterBDD(32);
         // P4TesterBDD ipv6bdd = new P4TesterBDD(128);
 
-        P4Tester p4tester = new P4Tester(bdd);
+        CmdOption cmdOption = new CmdOption();
+        CmdLineParser parser = new CmdLineParser(cmdOption);
+
+        try {
+            parser.parseArgument(args);
+        } catch (CmdLineException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
 
 
-
-        if (args.length == 0) {
-//            p4tester.startInternet2(false, false);
-            p4tester.startStanford(false, true);
-
-        } if (args.length == 1) {
-            if (args[0].equals("internet2")) {
-                p4tester.startInternet2(false, false);
+        if (cmdOption.update) {
+            if (cmdOption.fast) {
+                UPDATE_FLAG = 1;
             } else {
-                p4tester.startStanford(false, false);
+                UPDATE_FLAG = 2;
             }
-        } if (args.length == 2) {
-            if (args[0].equals("internet2")) {
-                p4tester.startInternet2(true, false);
-            } else {
-                p4tester.startStanford(true, false);
-            }
+        } else {
+            UPDATE_FLAG = 0;
+        }
+
+        if (cmdOption.print) {
+            PRINT_FLAG = 1;
+        } else {
+            PRINT_FLAG = 0;
+        }
+
+        INJECT_FLAG = cmdOption.inject;
+
+        P4Tester p4tester = new P4Tester(bdd,
+                cmdOption.maxRules,
+                cmdOption.priority,
+                cmdOption.maxRouters);
+
+        if (cmdOption.dataSet.equals("internet2")) {
+            p4tester.startInternet2(UPDATE_FLAG, INJECT_FLAG, PRINT_FLAG);
+        } else if (cmdOption.dataSet.equals("stanford")) {
+            p4tester.startStanford(UPDATE_FLAG, INJECT_FLAG, PRINT_FLAG);
+        } else {
+            p4tester.startStanford(UPDATE_FLAG, INJECT_FLAG, PRINT_FLAG);
         }
     }
 }

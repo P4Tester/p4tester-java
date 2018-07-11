@@ -18,11 +18,9 @@ import static java.lang.System.exit;
 
 public class P4TesterProbeProcessor {
 
-
     private ArrayList<NetworkProbeSet> networkProbeSets;
     private HashMap<Integer, NetworkProbeSet> probeSetHashMap;
     private Pcap pcap;
-    private int packetCount;
     private ArrayList<Integer> matchList;
     private long startTime;
     private int init;
@@ -44,7 +42,6 @@ public class P4TesterProbeProcessor {
 
         this.networkProbeSets = networkProbeSets;
         this.probeSetHashMap =new HashMap<>();
-        this.packetCount = 0;
         this.matchList = new ArrayList<>();
         this.init = 0;
         this.faultRules = new HashSet<>();

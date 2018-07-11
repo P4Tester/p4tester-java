@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>  
   
-<project name="p4tester" default="compile" basedir=".">
+<project name="p4tester" default="jar" basedir=".">
   
     <property name="src.root" value="src"/>
     <property name="build.dir" value="build/"/>
@@ -63,12 +63,6 @@
 
     <target name="clean">
         <delete dir="${build.dir}"/>
-    </target>
-
-    <target name="run">
-        <java classname="${main}" fork="true">
-            <classpath refid="basepath"/>
-        </java>
     </target>
 
 </project>
