@@ -798,7 +798,7 @@ public class P4Tester {
         }
     }
 
-    private void buildStanfordST() {
+    private void _buildStanfordST() {
         ArrayList<Router> children = new ArrayList<>();
         children.add(this.routers.get(1));
         children.add(this.routers.get(2));
@@ -830,7 +830,7 @@ public class P4Tester {
     }
 
 
-    private void _buildStanfordST() {
+    private void buildStanfordST() {
         ArrayList<Router> children = new ArrayList<>();
         if (this.maxRouters > 1) {
             children.add(this.routers.get(1));
