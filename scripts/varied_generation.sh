@@ -37,7 +37,7 @@ echo "Start Internet2 Rules"
 for ((i=100; i<=2000; i += 100))
 do
 echo "Internet2 Rule $i"
-java -jar build/p4tester.jar -data internet2 -max $i >>internet2.txt
+java -jar build/p4tester.jar -data internet2 -max $i -print >>internet2.txt
 done
 
 cat internet2.txt|grep Step1 >internet2_rules_step1.txt
@@ -53,7 +53,7 @@ echo "Start Internet2 Routers"
 for ((i=1; i<=15; i ++))
 do
 echo "Internet2 Router $i"
-java -jar build/p4tester.jar -data internet2 -routers $i >>internet2.txt
+java -jar build/p4tester.jar -data internet2 -routers $i -print >>internet2.txt
 done
 cat internet2.txt|grep Step1 >internet2_routers_step1.txt
 cat internet2.txt|grep Step2 >internet2_routers_step2.txt
