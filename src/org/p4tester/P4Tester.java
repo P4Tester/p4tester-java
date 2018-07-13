@@ -447,11 +447,18 @@ public class P4Tester {
             count += router.getRules().size();
         }
 
-        // System.out.println(count);
-        // System.out.println(this.probeSets.size());
+        if (print == 1) {
+            System.out.println("Rules:" + count);
+        } else {
+            System.out.println(count);
+        }
 
-        System.out.println("Probes:\t" + this.probeSets.size());
 
+        if (print == 1) {
+            System.out.println("Probes:\t" + this.probeSets.size());
+        } else {
+            System.out.println(this.probeSets.size());
+        }
         if (update > 0) {
 
             int routerId = (int) (this.routers.size() * Math.random());
@@ -514,7 +521,23 @@ public class P4Tester {
             System.out.println((System.nanoTime() - start));
         }
 
-        System.out.println("Probes:\t" + this.probeSets.size());
+        int count = 0;
+        for (Router router:this.routers) {
+            count += router.getRules().size();
+        }
+
+        if (print == 1) {
+            System.out.println("Rules:" + count);
+        } else {
+            System.out.println(count);
+        }
+
+
+        if (print == 1) {
+            System.out.println("Probes:\t" + this.probeSets.size());
+        } else {
+            System.out.println(this.probeSets.size());
+        }
 
 
         if (update > 0) {

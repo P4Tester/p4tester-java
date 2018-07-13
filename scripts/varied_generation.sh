@@ -11,6 +11,7 @@ done
 cat stanford.txt|grep Step1 >stanford_rules_step1.txt
 cat stanford.txt|grep Step2 >stanford_rules_step2.txt
 cat stanford.txt|grep Step3 >stanford_rules_step3.txt
+cat stanford.txt|grep Rules >stanford_rules.txt
 cat stanford.txt|grep Probes >stanford_rules_probes.txt
 
 
@@ -43,6 +44,7 @@ done
 cat internet2.txt|grep Step1 >internet2_rules_step1.txt
 cat internet2.txt|grep Step2 >internet2_rules_step2.txt
 cat internet2.txt|grep Step3 >internet2_rules_step3.txt
+cat internet2.txt|grep Rules >internet2_rules.txt
 cat internet2.txt|grep Probes >internet2_rules_probes.txt
 
 
