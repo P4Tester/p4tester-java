@@ -251,6 +251,63 @@ public class NetworkProbeSet extends ProbeSet {
         return probes;
     }
 
+
+    public ArrayList<byte[]> generateTofinoProbes(int id) {
+        ArrayList<SwitchPortPair> path = this.tester.getPath();
+        if (this.update == 0) {
+            this.probes.clear();
+
+            int[] ipBytes = this.bdd.oneSATArray(this.match);
+
+            dstIp = 0;
+            for (int b:ipBytes) {
+                dstIp <<= 1;
+                dstIp += b;
+            }
+
+            Ethernet ethernet = new Ethernet();
+
+            byte[] bytes = {0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
+            ethernet.setDestinationMACAddress(bytes)
+                    .setSourceMACAddress(bytes)
+                    .setEtherType(EthType.IPv4);
+
+            IPv4 ip = new IPv4();
+            ip.setProtocol(IpProtocol.UDP)
+                    .setTtl((byte)8)
+                    .setIdentification((short)id)
+                    .setDestinationAddress(dstIp)
+                    .setSourceAddress(dstIp);
+
+            UDP udp = new UDP();
+            udp.setDestinationPort((short) 11111)
+                    .setSourcePort((short) 11111);
+
+            ip.setPayload(udp);
+            ethernet.setPayload(ip);
+
+
+            udp.setLength((short)(10));
+
+            byte[] header = ethernet.serialize();
+
+
+            byte[] probe = new byte[header.length + 2]; // For test results
+            ByteBuffer byteBuffer = ByteBuffer.wrap(probe);
+
+            byteBuffer.put(header);
+            byteBuffer.putShort((short) 0);
+
+            this.probes.add(probe);
+
+            this.update = 1;
+        }
+
+        return probes;
+    }
+
+
+
     public ArrayList<String> check(byte[] data, int offset, int length) {
         ArrayList<String> faults = new ArrayList<>();
         ByteBuffer byteBuffer = ByteBuffer.wrap(data, offset, length);

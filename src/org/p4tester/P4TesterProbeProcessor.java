@@ -104,6 +104,37 @@ public class P4TesterProbeProcessor {
             init = 1;
         }
     }
+
+
+    public void injectTofinoProbes() {
+        if (networkProbeSets != null) {
+            for (int i = 0; i < networkProbeSets.size(); i++) {
+                //System.out.println("NetworkProbeSet :" + networkProbeSet.getRouters().size() + "  " + networkProbeSet.getPaths().size());
+                NetworkProbeSet networkProbeSet = networkProbeSets.get(i);
+
+                if (this.probeSetHashMap.containsKey(networkProbeSet.getMatch())) {
+                    probeSetHashMap.put(networkProbeSet.getMatch(), networkProbeSet);
+                }
+
+                for (byte[] probe:networkProbeSet.generateTofinoProbes(i)) {
+                    this.pcap.sendPacket(probe);
+                    try {
+                        Thread.sleep(0, 100);
+                    }catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+                if (matchList.size() <= i) {
+                    matchList.add(networkProbeSet.getDstIp());
+                }
+            }
+        }
+        if (init == 0) {
+            this.startTime = System.nanoTime();
+            init = 1;
+        }
+    }
+
     private int count = 0;
     public void checkPacket(PcapPacket pcapPacket) {
         byte[] packet = pcapPacket.getByteArray(0, 42);

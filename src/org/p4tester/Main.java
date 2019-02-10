@@ -35,11 +35,11 @@ class CmdOption {
 
 
 public class Main {
-    private static int UPDATE_FLAG;
-    private static int PRINT_FLAG;
-    private static boolean INJECT_FLAG;
 
     public static void main(String[] args) {
+        int UPDATE_FLAG = 0;
+        int PRINT_FLAG = 0;
+        boolean INJECT_FLAG = false;
         P4TesterBDD bdd = new P4TesterBDD(32);
         // P4TesterBDD ipv6bdd = new P4TesterBDD(128);
 
@@ -52,7 +52,6 @@ public class Main {
             e.printStackTrace();
             System.exit(1);
         }
-
 
         if (cmdOption.update) {
             if (cmdOption.fast) {
@@ -76,11 +75,13 @@ public class Main {
                 cmdOption.maxRules,
                 cmdOption.priority,
                 cmdOption.maxRouters);
-
         if (cmdOption.dataSet.equals("internet2")) {
             p4tester.startInternet2(UPDATE_FLAG, INJECT_FLAG, PRINT_FLAG);
         } else if (cmdOption.dataSet.equals("stanford")) {
             p4tester.startStanford(UPDATE_FLAG, INJECT_FLAG, PRINT_FLAG);
+        } else if (cmdOption.dataSet.equals("tofino")) {
+            p4tester.setMaxRouters(1);
+            p4tester.startTofino(UPDATE_FLAG, INJECT_FLAG, PRINT_FLAG);
         } else {
             p4tester.startStanford(UPDATE_FLAG, INJECT_FLAG, PRINT_FLAG);
         }

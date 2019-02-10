@@ -133,6 +133,10 @@ public class P4Tester {
         this.maxRouters = maxRouter;
     }
 
+    public void setMaxRouters(int maxRouters) {
+        this.maxRouters = maxRouters;
+    }
+
     String getStanfordRouterName(int i) {
         return STANFORD_ROUTERS[i];
     }
@@ -248,10 +252,6 @@ public class P4Tester {
             String port;
             String nextHop;
             while((line = reader.readLine()) != null) {
-                match = null;
-                port = null;
-                nextHop = null;
-
                 try {
                     String[] info = line.split(" ");
                     match = info[0];
@@ -260,21 +260,19 @@ public class P4Tester {
 
                     if (match != null && nextHop != null && !port.equals("self")) {
                         router.addIPv4withPrefix(match, port, nextHop);
+                        // System.out.println(match.split("/")[0] + " " +match.split("/")[1]);
                     }
-                    // else {
-                        // System.out.println(line);
-                    // }
-
 
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
             }
+            inputStreamReader.close();
+            reader.close();
+
             router.generateProbeSets();
             this.routers.add(router);
             routerMap.put(routerName, router);
-            inputStreamReader.close();
-            reader.close();
             // System.out.println(routerName + " " + router.getRules().size());
         } catch (Exception e) {
             e.printStackTrace();
@@ -634,6 +632,107 @@ public class P4Tester {
         //
 
     }
+
+
+    void startTofino(int update, boolean inject, int print) {
+        long start = System.nanoTime();
+        tofinoProbeConstruct();
+
+        if (print == 1) {
+            System.out.println("Step1:\t" + (System.nanoTime() - start));
+        } else {
+            System.out.println((System.nanoTime() - start));
+        }
+
+        start = System.nanoTime();
+        buildBDDTreeFast();
+        if (print == 1) {
+            System.out.println("Step2:\t" + (System.nanoTime() - start));
+        } else {
+            System.out.println((System.nanoTime() - start));
+        }
+
+        start = System.nanoTime();
+        this.buildStanfordST();
+        if (print == 1) {
+            System.out.println("Step3:\t" + (System.nanoTime() - start));
+        } else {
+            System.out.println((System.nanoTime() - start));
+        }
+
+        int count = 0;
+        for (Router router:this.routers) {
+            count += router.getRules().size();
+        }
+
+        if (print == 1) {
+            System.out.println("Rules:" + count);
+        } else {
+            System.out.println(count);
+        }
+
+
+        if (print == 1) {
+            System.out.println("Probes:\t" + this.probeSets.size());
+        } else {
+            System.out.println(this.probeSets.size());
+        }
+
+        if (update > 0) {
+            int routerId = (int) (this.routers.size() * Math.random());
+            Router router = routers.get(routerId);
+            int ruleId = (int) (router.getRules().size() * Math.random());
+            RouterRule rule = router.getRules().get(ruleId);
+            start = System.nanoTime();
+            removeRule(router.getName(), rule.getMatchIp());
+            System.out.println("Remove:\t" + (System.nanoTime() - start));
+
+            start = System.nanoTime();
+
+            if (update == 1) {
+                addRuleFast(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
+                System.out.println("Fast:\t" + (System.nanoTime() - start));
+            } else {
+                addRule(router.getName(), rule.getMatchIp(), rule.getPort(), rule.getNextHop());
+                System.out.println("Add:\t" + (System.nanoTime() - start));
+            }
+        }
+
+        if (inject) {
+            P4TesterProbeProcessor probeProcessor = new P4TesterProbeProcessor(this.probeSets);
+            // ExecutorService executor = Executors.newFixedThreadPool(8);
+
+            Runnable injectTask = new Runnable() {
+                @Override
+                public void run() {
+                    // System.out.println(probeSets.size());
+                    try {
+                        while (true) {
+                            probeProcessor.injectTofinoProbes();
+                            Thread.sleep(1000);
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+
+            Runnable collectTask = new Runnable() {
+                @Override
+                public void run() {
+                    probeProcessor.loop();
+                }
+            };
+            Thread thread = new Thread(injectTask);
+            thread.start();
+
+            probeProcessor.loop();
+        }
+
+        //
+
+    }
+
 
     public void startUNVv6(boolean fast, boolean inject) {
 
@@ -1020,6 +1119,12 @@ public class P4Tester {
         for (Router router:this.routers) {
             router.buildTree();
         }
+    }
+
+
+    private void tofinoProbeConstruct() {
+        String fileName = "resource/Stanford_backbone/bbra.txt";
+        this.parseCompressedStanford("bbra", fileName, maxRules);
     }
 
     private void stanfordProbeConstruct() {
