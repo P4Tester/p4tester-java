@@ -177,11 +177,11 @@ class DCINTTest(pd_base_tests.ThriftInterfaceDataPlane):
     def runTest(self):
         print "Populate table entries!"
 
-        # for port in [128, 129, 130, 131, 0, 1, 2, 3]:
-        #    self.setupPort(port, None)
+        for port in [128, 129, 130, 131, 0, 1, 2, 3]:
+            self.setupPort(port, None)
 
-        # for port in [136, 137, 138, 139, 8, 9, 10, 11]:
-        #    self.setupPort(port, pal_autoneg_policy_t.BF_AN_FORCE_DISABLE)
+        for port in [136, 137, 138, 139, 8, 9, 10, 11]:
+            self.setupPort(port, pal_autoneg_policy_t.BF_AN_FORCE_DISABLE)
         f = open("ip.txt")
         for l in f:
             tmp = l.strip('\n').split(' ')

@@ -68,9 +68,7 @@ public class Main {
         } else {
             PRINT_FLAG = 0;
         }
-
         INJECT_FLAG = cmdOption.inject;
-
         P4Tester p4tester = new P4Tester(bdd,
                 cmdOption.maxRules,
                 cmdOption.priority,

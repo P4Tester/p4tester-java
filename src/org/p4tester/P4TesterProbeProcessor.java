@@ -33,10 +33,15 @@ public class P4TesterProbeProcessor {
         int flags = Pcap.MODE_PROMISCUOUS; // capture all packets
         int timeout = 10 * 1000;           // 10 seconds in millis
         StringBuilder errbuf = new StringBuilder();
-        this.pcap =
-                Pcap.openLive("heth", snaplen, flags, timeout, errbuf);
+        try {
+            this.pcap =
+                    Pcap.openLive("lo", snaplen, flags, timeout, errbuf);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
         if (pcap == null) {
-            System.out.println("Cannot open heth!");
+            System.out.println("Cannot open eth0!");
             exit(1);
         }
 

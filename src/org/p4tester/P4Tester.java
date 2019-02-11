@@ -1116,11 +1116,15 @@ public class P4Tester {
         }
         */
 
+        int count_rulechecker = 0;
+        for (Router router: this.routers) {
+            count_rulechecker += router.getRules().size();
+        }
+        System.out.println("RuleChecker " + count_rulechecker);
         for (Router router:this.routers) {
             router.buildTree();
         }
     }
-
 
     private void tofinoProbeConstruct() {
         String fileName = "resource/Stanford_backbone/bbra.txt";
@@ -1136,7 +1140,8 @@ public class P4Tester {
             if (count > this.maxRouters ) {
                 break;
             }
-            this.parseCompressedStanford(s, fileName, maxRules);
+            //this.parseCompressedStanford();
+                        this.parseCompressedStanford(s, fileName, maxRules);
             // constructors.add(t);
         }
         /*
@@ -1154,6 +1159,12 @@ public class P4Tester {
             }
         }
         */
+        int count_rulechecker = 0;
+        for (Router router: this.routers) {
+            count_rulechecker += router.getRules().size();
+            System.out.println(router.getName()+" "+router.getRules().size());
+        }
+        System.out.println("RuleChecker "+count_rulechecker);
         for (Router router:this.routers) {
             router.buildTree();
         }
